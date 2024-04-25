@@ -14,3 +14,7 @@ Design:
 
 
 Apr19: Obtained codes from garmoth.com
+
+Apr 22: Met a blocking phase, once you redeem a code, you will navigate to a unique page,
+a page whose url I forgot to save. This perhaps may lead to limited testing practices as
+we can only redeem a code once.
