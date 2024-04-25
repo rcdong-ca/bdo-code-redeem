@@ -8,15 +8,8 @@ class GarmothWeb():
     baseURL = "https://garmoth.com"
     coupons = []
 
-    def __init__(self):
-
-        # get codes
-        options = Options()
-        options.add_argument('-headless')
-        browser = Firefox(options=options)
-
-        browser.get(self.baseURL)
-
+    def __init__(self, browser: Firefox):
+        
         seeMoreButton = browser.find_element(By.XPATH, "/html/body/div[1]/div/main/div[2]/div[1]/div[1]/section[2]/div[1]/div/a")
         seeMoreButton.click()
 
