@@ -15,31 +15,44 @@ class BdoWeb:
     defaultProfile = "/Users/richard/Library/Application Support/Firefox/Profiles/zjy78xik.default-release"
 
     browser: Firefox = None
-
     def __init__(self) -> None:
         options = Options()
         options.add_argument('-headless')
         options.profile =FirefoxProfile(self.defaultProfile)
         self.browser = Firefox(options=options)
 
+    def __enter__(self) -> None:
+        pass
+    
+    def __exit__(self, exc_type, exc_value, traceback):
+        self.browser.quit()
     
     def steamLogIn(self, username: str = "", password: str = ""):
-        # check if we are already logged in
+        bdoLogInPage = Page.BDOLogInPage(self.browser)
+        bdoLogInPage.navigateToPage()
 
-        bdoLogInPage = Page.BDOLogInPage()
-        bdoLogInPage.navigateToPage(self.browser)
-        bdoLogInPage.navigateToSteamLogIn(self.browser)
-
-        # we should now be in the steamLogInPage
-        PT.PageTools.saveScreenShot(self.browser, os.getcwd()+"/logs/steamLogin.png")
-        steamLogInPage = Page.SteamLogInPage()
-        steamLogInPage.logIn(self.browser, username, password)
-        assert self.browser.title == "Black Desert NA/EU – The Start of Your Adventure | Pearl Abyss", "Failed to enter login site"
+        steamLogInPage = bdoLogInPage.navigateToSteamLogIn()
+        bdoHomePage = steamLogInPage.logIn(username, password)
     
     def getLoginStatus(self):
-        pass
+        Page.BDOHomePage.getLogInStatus(self.browser)
+
+    def inputCodes(self):
+        try:
+            Page.BDOCouponPage.navigateToPage(self.browser)
+            Page.BDOCouponPage.inputCode(self.browser, "1234")
+        except Exception as e:
+            print(e)
+            PT.PageTools.saveScreenShot(self.browser)
         
 
+#js-leftProfileAcitve
+#.util_wrap
+# /html/body/div[4]/div/header/div/nav/div/ul
+# /html/body/div[4]/div/header/div/nav/div/ul
+
+
 if __name__ == "__main__":
-    bdoWeb = BdoWeb()
-    bdoWeb.steamLogIn()
+    with BdoWeb() as bdoWeb:
+        bdoWeb = BdoWeb()
+        
