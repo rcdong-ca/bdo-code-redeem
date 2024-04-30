@@ -1,6 +1,8 @@
 from selenium.webdriver import Firefox
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 import os
 import PageTools as PT
 
@@ -19,6 +21,7 @@ class BDOHomePage(Page):
     
     def __init__(self, browser) -> None:
         super().__init__(browser)
+        
         assert self.browser.title == self.title, "Not at BDO Home Page"
 
     def navigateToPage(self) -> None:
@@ -33,30 +36,36 @@ class BDOHomePage(Page):
         pass
 
 
+    # .after_login
+
+
 class SteamLogInPage(Page):
     
     def __init__(self, browser) -> None:
         super().__init__(browser)
 
-    def navigateToPage(self) -> None:
-        print("navigating to steamLogIn Page...")
-        # no static url for the steam login page
-        assert self.browser.title == "Steam Community", "failed to navigate to steam login page"
-
     def logIn(self, userName: str = "", passWord: str = "") -> BDOHomePage:
 
         # check if steam has remembered this user previously...
         if (True): # TODO::Perform check if the HTML object exists
-            return self.__SignInWithCookie()
+            print("steamLogin Title: ", self.browser.title)
+            bdoHomePage = self.__SignInWithCookie()
+            print("successfully navigated to home page?")
+            print(bdoHomePage.getLogInStatus())
         else:
             return None
 
     
     def __SignInWithCookie(self) -> BDOHomePage:
-        PT.PageTools.saveScreenShot(self.browser, "steamLogin.png")
-        signInButton = self.browser.find_element(By.CSS_SELECTOR, "#imageLogin")
+        
+        signInButton = WebDriverWait(self.browser, 3).until(EC.presence_of_element_located((By.CSS_SELECTOR, '#imageLogin')))
         signInButton.click()
-        return BDOHomePage(self.browser)
+        # signInButton = self.browser.find_element(By.CSS_SELECTOR, "#imageLogin")
+        PT.PageTools.saveScreenShot(self.browser, "steamLogin.png")
+        signInButton.click()
+        print("clicked sign in...")
+        print(" navigated to home page", self.browser.title)
+        print(self.browser.title)
 
 
 class BDOLogInPage(Page):
@@ -65,7 +74,8 @@ class BDOLogInPage(Page):
 
     def __init__(self, browser) -> None:
         super().__init__(browser)
-        assert self.browser.title == self.title, "Failed to be at the Login Page"
+        if self.browser.title == self.title:
+            self.navigateToPage()
 
     def navigateToPage(self) -> None:
         self.browser.get(self.url)
@@ -90,8 +100,6 @@ class BDOCouponPage(Page):
 
     def __init__(self, browser) -> None:
         super().__init__(browser)
-        assert self.browser.title == "Redeem Coupon Code | Black Desert NA/EU", \
-            "Cannot reach coupon page, perhaps you are not logged in"
 
     def navigateToPage(self) ->None:
         self.browser.get(self.url)
@@ -102,12 +110,14 @@ class BDOCouponPage(Page):
 
         couponContainer = self.browser.find_element(By.CSS_SELECTOR, "#coupon01")
         couponContainer.click()
-        PT.PageTools.pasteKeys(couponContainer, code)
+        couponContainer.send_keys(code)
+        PT.PageTools.saveScreenShot(self.browser, "Code_imnput.png")
         # click the use button
         self.browser.find_element(By.CSS_SELECTOR, "#submitCoupon").click()
 
         # an alert will occur next. 3 kinds of alerts to handle (already claimed, cliam reward, expired)
         # handle only the already used and claim reward alerts
+        print("going to print out alert screen shot")
         PT.PageTools.saveScreenShot(self.browser, "alertScreenShot.png")
         self.browser.switch_to.alert.accept()
 

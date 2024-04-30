@@ -4,6 +4,7 @@ from selenium.webdriver.firefox.options import Options
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+from selenium.common.exceptions import TimeoutException
 
 import Page
 import PageTools as PT
@@ -25,25 +26,36 @@ class BdoWeb:
         pass
     
     def __exit__(self, exc_type, exc_value, traceback):
+        print("Closing the browser!!!")
         self.browser.quit()
     
-    def steamLogIn(self, username: str = "", password: str = ""):
+    def steamLogIn(self, username: str = "", password: str = "") -> bool:
         bdoLogInPage = Page.BDOLogInPage(self.browser)
         bdoLogInPage.navigateToPage()
 
         steamLogInPage = bdoLogInPage.navigateToSteamLogIn()
-        bdoHomePage = steamLogInPage.logIn(username, password)
+        steamLogInPage.logIn(username, password) # navigate to BDO home page
+        if (self.getLoginStatus()):
+            return True
+        return False
     
-    def getLoginStatus(self):
-        Page.BDOHomePage.getLogInStatus(self.browser)
+    def getLoginStatus(self) -> bool:
+        try:
+            WebDriverWait(self.browser, 2).until(EC.presence_of_element_located((By.CSS_SELECTOR, '#imageLogin')))
+            return True
+        except TimeoutException:
+           return False
+
+        # Page.BDOHomePage.getLogInStatus(self.browser)
 
     def inputCodes(self):
         try:
-            Page.BDOCouponPage.navigateToPage(self.browser)
-            Page.BDOCouponPage.inputCode(self.browser, "1234")
+            bdoCouponPage = Page.BDOCouponPage(self.browser)
+            bdoCouponPage.navigateToPage()
+            bdoCouponPage.inputCode("1234567890")
         except Exception as e:
             print(e)
-            PT.PageTools.saveScreenShot(self.browser)
+            PT.PageTools.saveScreenShot(self.browser, "failedINputCode.png")
         
 
 #js-leftProfileAcitve
@@ -53,6 +65,16 @@ class BdoWeb:
 
 
 if __name__ == "__main__":
+
     with BdoWeb() as bdoWeb:
         bdoWeb = BdoWeb()
+        print("Logging in...")
+        logInStatus = bdoWeb.steamLogIn()
+        if (logInStatus is False):
+            print("Failed to log in")
+        else:
+            print("logged in scucessfuly")
+            print("Inputting codes...")
+            bdoWeb.inputCodes()
+        
         

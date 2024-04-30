@@ -8,7 +8,7 @@ class PageTools:
     
 
     @staticmethod
-    def saveScreenShot(browser, path: str):
+    def saveScreenShot(browser: Firefox, path: str):
         fullPath = LOGDIR_PATH + path
         print("saving screenship to ", fullPath, "...")
         browser.save_screenshot(fullPath)
