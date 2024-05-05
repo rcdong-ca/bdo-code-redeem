@@ -6,19 +6,21 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException
 
+
 import Page
 import PageTools as PT
 
 import os
 
+DEFAULT_PROFILE = "/Users/richard/Library/Application Support/Firefox/Profiles/zjy78xik.default-release"
+
 class BdoWeb:
     baseUrl = "https://www.naeu.playblackdesert.com/en-US/Main/Index"
-    defaultProfile = "/Users/richard/Library/Application Support/Firefox/Profiles/zjy78xik.default-release"
 
     browser: Firefox = None
-    def __init__(self) -> None:
+    def __init__(self, browser: Firefox) -> None:
         options = Options()
-        options.add_argument('-headless')
+        # options.add_argument('-headless')
         options.profile =FirefoxProfile(self.defaultProfile)
         self.browser = Firefox(options=options)
 
@@ -26,21 +28,23 @@ class BdoWeb:
         pass
     
     def __exit__(self, exc_type, exc_value, traceback):
-        print("Closing the browser!!!")
+        self.browser.close()
         self.browser.quit()
+        print("exiting bdoweb")
+        pass
+        
     
     def steamLogIn(self, username: str = "", password: str = "") -> bool:
-        bdoLogInPage = Page.BDOLogInPage(self.browser)
-        bdoLogInPage.navigateToPage()
-
+        bdoHomePage = Page.BDOHomePage(self.browser)
+        bdoLogInPage = bdoHomePage.navigateToLogInPage()
         steamLogInPage = bdoLogInPage.navigateToSteamLogIn()
-        steamLogInPage.logIn(username, password) # navigate to BDO home page
-        if (self.getLoginStatus()):
-            return True
-        return False
+        steamLogInPage.logIn(username, password)
+        return True
     
     def getLoginStatus(self) -> bool:
         try:
+            bdoHomePage = Page.BDOHomePage(self.browser)
+            bdoHomePage.navigateToPage()
             WebDriverWait(self.browser, 2).until(EC.presence_of_element_located((By.CSS_SELECTOR, '#imageLogin')))
             return True
         except TimeoutException:
@@ -66,15 +70,19 @@ class BdoWeb:
 
 if __name__ == "__main__":
 
-    with BdoWeb() as bdoWeb:
+    options = Options()
+    # options.add_argument('-headless')
+    options.profile =FirefoxProfile(DEFAULT_PROFILE)
+    browser = Firefox(options=options)
+
+    codes = "1234567890"
+
+    with BdoWeb(browser) as bdoWeb:
         bdoWeb = BdoWeb()
-        print("Logging in...")
-        logInStatus = bdoWeb.steamLogIn()
-        if (logInStatus is False):
-            print("Failed to log in")
-        else:
-            print("logged in scucessfuly")
-            print("Inputting codes...")
-            bdoWeb.inputCodes()
-        
+        bdoWeb.steamLogIn()
+        bdoWeb.inputCodes(codes)
+    
+    browser.quit()
+
+    print(" is this dead?")
         
