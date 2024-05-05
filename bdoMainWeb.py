@@ -9,6 +9,7 @@ from selenium.common.exceptions import TimeoutException
 
 import Page
 import PageTools as PT
+import GarmothWeb as GM
 
 import os
 
@@ -19,20 +20,7 @@ class BdoWeb:
 
     browser: Firefox = None
     def __init__(self, browser: Firefox) -> None:
-        options = Options()
-        # options.add_argument('-headless')
-        options.profile =FirefoxProfile(self.defaultProfile)
-        self.browser = Firefox(options=options)
-
-    def __enter__(self) -> None:
-        pass
-    
-    def __exit__(self, exc_type, exc_value, traceback):
-        self.browser.close()
-        self.browser.quit()
-        print("exiting bdoweb")
-        pass
-        
+        self.browser = browser
     
     def steamLogIn(self, username: str = "", password: str = "") -> bool:
         bdoHomePage = Page.BDOHomePage(self.browser)
@@ -45,27 +33,20 @@ class BdoWeb:
         try:
             bdoHomePage = Page.BDOHomePage(self.browser)
             bdoHomePage.navigateToPage()
-            WebDriverWait(self.browser, 2).until(EC.presence_of_element_located((By.CSS_SELECTOR, '#imageLogin')))
             return True
         except TimeoutException:
            return False
 
         # Page.BDOHomePage.getLogInStatus(self.browser)
 
-    def inputCodes(self):
+    def inputCodes(self, codes: list):
         try:
             bdoCouponPage = Page.BDOCouponPage(self.browser)
             bdoCouponPage.navigateToPage()
-            bdoCouponPage.inputCode("1234567890")
+            bdoCouponPage.inputCode(codes)
         except Exception as e:
             print(e)
             PT.PageTools.saveScreenShot(self.browser, "failedINputCode.png")
-        
-
-#js-leftProfileAcitve
-#.util_wrap
-# /html/body/div[4]/div/header/div/nav/div/ul
-# /html/body/div[4]/div/header/div/nav/div/ul
 
 
 if __name__ == "__main__":
@@ -75,14 +56,17 @@ if __name__ == "__main__":
     options.profile =FirefoxProfile(DEFAULT_PROFILE)
     browser = Firefox(options=options)
 
-    codes = "1234567890"
+    try:
+        garmothWeb = GM.GarmothWeb(browser)
+        codes = garmothWeb.getCouponCodes()
 
-    with BdoWeb(browser) as bdoWeb:
-        bdoWeb = BdoWeb()
+        print(codes)
+        bdoWeb = BdoWeb(browser)
         bdoWeb.steamLogIn()
         bdoWeb.inputCodes(codes)
-    
-    browser.quit()
-
-    print(" is this dead?")
+        
+        browser.quit()
+    except Exception as e:
+        print(e)
+        browser.quit()
         

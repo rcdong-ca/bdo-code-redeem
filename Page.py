@@ -11,7 +11,7 @@ import time
 BDO_HOME_URL = "https://www.naeu.playblackdesert.com/en-US/Main/Index?_region="
 BDO_LOGIN_URL = loginUrl = "https://account.pearlabyss.com/en-US/Member/Login?_returnUrl=https%3a%2f%2faccount.pearlabyss.com%2fen-US%2fMember%2fLogin%2fAuthorizeOauth%3fresponse_type%3dcode%26scope%3dprofile%26state%3dQ%252bzMgd6tBby5mQ9xmezhUvcIQoJTXxh0mjtkzX6dpeXOk%252fcGDcXeD4ZuesTjnTuYi%252b2pM%252bMX%252bsrFjsKTInwxSlHcMXCIdIu2ukqF0yheqpc%253d%26client_id%3dclient_id%26redirect_uri%3dhttps%3a%2f%2fwww.naeu.playblackdesert.com%2fen-US%2fLogin%2fPearlabyss%2fOauth2CallBack%26isLogout%3dFalse%26redirectAccountUri%3d"
 
-WAIT_TIME = 2
+
 
 class Page():
     browser: Firefox = None
@@ -31,6 +31,7 @@ class BDOHomePage(Page):
     def navigateToLogInPage(self):
         if (self.browser.title != self.title):
             self.browser.get(self.url)
+
         
         print("navigating to BDOLoginPage...")
         # hover over profile button to
@@ -39,7 +40,7 @@ class BDOHomePage(Page):
         actions = ActionChains(self.browser)
         actions.move_to_element(profileIcon)
         actions.perform()
-        actions.pause(1.0) # wait for element the drop down box to load onto screen
+        actions.pause(PT.WAIT_TIME) # wait for element the drop down box to load onto screen
         actions.move_to_element(LogInButton)
         actions.click()
         actions.perform()
@@ -65,11 +66,10 @@ class SteamLogInPage(Page):
         super().__init__(browser)
 
     def logIn(self, userName: str = "", passWord: str = "") -> BDOHomePage:
-        if PT.PageTools.waitUntilTitleIsEqual(self.browser.title, self.title) is False:
-            print("BAD STUFF: SHOULD INSERT ERROR HERE")
+        if PT.PageTools.waitUntilTitleIsEqual(self.browser, self.title, timeout=PT.WAIT_TIME) is False:
+            print("Fail to verify tiltes: ", self.browser.title, " ", self.title)
         # check if steam has remembered this user previously...
         if (True): # TODO::Perform check if the HTML object exists
-            print("steamLogin Title: ", self.browser.title)
             self.__SignInWithCookie()
             return BDOHomePage(self.browser)
    
@@ -79,7 +79,7 @@ class SteamLogInPage(Page):
     
     def __SignInWithCookie(self) -> None:
         # Will have to wait for the cookie stuff to work
-        signInButton = WebDriverWait(self.browser, 2).until(EC.presence_of_element_located((By.CSS_SELECTOR, '#imageLogin')))
+        signInButton = WebDriverWait(self.browser, PT.WAIT_TIME).until(EC.presence_of_element_located((By.CSS_SELECTOR, '#imageLogin')))
         signInButton.click()
 
 
@@ -97,19 +97,18 @@ class BDOLogInPage(Page):
 
     def navigateToSteamLogIn(self) -> SteamLogInPage:
         # confirm we are on the BDOLogInPage
-        print("title: ", self.browser.title, " ", self.title)
-        if PT.PageTools.waitUntilTitleIsEqual(self.browser, self.title, interval=0.1, timeout=WAIT_TIME) is False:
+        if PT.PageTools.waitUntilTitleIsEqual(self.browser, self.title, interval=0.1, timeout=PT.WAIT_TIME) is False:
             print("Failed to load BDOLogInPage...")
-        steamLoginButton = WebDriverWait(self.browser, 5).until(EC.presence_of_element_located((By.CSS_SELECTOR, '#btnSteam')))
+            raise ValueError("Failed to load BDOLogInPage...")
+            return None
+        steamLoginButton = WebDriverWait(self.browser, PT.WAIT_TIME).until(EC.presence_of_element_located((By.CSS_SELECTOR, '#btnSteam')))
         # Scroll to log in button
-        print("scrolling to steamLoging BUtton")
         self.browser.execute_script("arguments[0].scrollIntoView();", steamLoginButton)
-        print("scrolled to element")
         steamLoginButton.click()
-        print("navigating to steamLoginPage...")
         return SteamLogInPage(self.browser)
 
     def logIn(cls, userName: str, password: str):
+        # I do not have normal steam account D: Nor am I willing to shill out cash for this
         pass
 
 
@@ -134,15 +133,8 @@ class BDOCouponPage(Page):
             couponContainer.send_keys(code)
             # click the use button
             self.browser.find_element(By.CSS_SELECTOR, "#submitCoupon").click()
-
             # an alert will occur next. 3 kinds of alerts to handle (already claimed, cliam reward, expired)
             # handle only the already used and claim reward alerts
-            time.sleep(3)
-            print("going to print out alert screen shot")
+            time.sleep(2)
             self.browser.switch_to.alert.accept()
-        # there can be two pages we can be re-directed to, we will look at the title
-        if (self.browser.title == "Redeem Coupon Code | Black Desert NA/EU"):
-            pass
-        else:
-            print("no codes we can use rightnow: darn, don't know what m")
-
+            couponContainer.clear()

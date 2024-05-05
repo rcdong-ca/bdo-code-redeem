@@ -4,6 +4,7 @@ import time
 import os
 
 LOGDIR_PATH = os.getcwd() + "/logs/"
+WAIT_TIME = 5
 
 class PageTools:
     
@@ -24,11 +25,9 @@ class PageTools:
     @staticmethod
     def waitUntilTitleIsEqual(browser: Firefox, title ,interval=0.1, timeout=1) -> bool:
         start = time.time()
-        print('waiting for : ', browser.title, " ", title,"...")
         while (browser.title != title):
             if time.time() - start < timeout:
                 time.sleep(interval) 
             else:
-                print
                 return False
         return True
