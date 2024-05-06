@@ -7,6 +7,7 @@ from selenium.webdriver.common.action_chains import ActionChains
 
 import PageTools as PT
 import time
+import logging
 
 BDO_HOME_URL = "https://www.naeu.playblackdesert.com/en-US/Main/Index?_region="
 BDO_LOGIN_URL = loginUrl = "https://account.pearlabyss.com/en-US/Member/Login?_returnUrl=https%3a%2f%2faccount.pearlabyss.com%2fen-US%2fMember%2fLogin%2fAuthorizeOauth%3fresponse_type%3dcode%26scope%3dprofile%26state%3dQ%252bzMgd6tBby5mQ9xmezhUvcIQoJTXxh0mjtkzX6dpeXOk%252fcGDcXeD4ZuesTjnTuYi%252b2pM%252bMX%252bsrFjsKTInwxSlHcMXCIdIu2ukqF0yheqpc%253d%26client_id%3dclient_id%26redirect_uri%3dhttps%3a%2f%2fwww.naeu.playblackdesert.com%2fen-US%2fLogin%2fPearlabyss%2fOauth2CallBack%26isLogout%3dFalse%26redirectAccountUri%3d"
@@ -15,9 +16,12 @@ BDO_LOGIN_URL = loginUrl = "https://account.pearlabyss.com/en-US/Member/Login?_r
 
 class Page():
     browser: Firefox = None
+    logger = None
+
     def __init__(self, browser) -> None:
         self.browser = browser
-        pass
+        self.logger = logging.getLogger(__name__)
+        logging.basicConfig(filename=PT.LOGFILE_PATH, encoding='utf-8', level=logging.DEBUG)
 
 class BDOHomePage(Page):
     url = BDO_HOME_URL
@@ -32,28 +36,35 @@ class BDOHomePage(Page):
         if (self.browser.title != self.title):
             self.browser.get(self.url)
 
-        
-        print("navigating to BDOLoginPage...")
+        self.logger.info("navigating to BDOLoginPage...")
         # hover over profile button to
         profileIcon = self.browser.find_element(By.CSS_SELECTOR, ".js-profileWrap") 
         LogInButton = self.browser.find_element(By.CSS_SELECTOR, "li.profile_remote_item:nth-child(1) > a:nth-child(1)")
-        actions = ActionChains(self.browser)
-        actions.move_to_element(profileIcon)
-        actions.perform()
-        actions.pause(PT.WAIT_TIME) # wait for element the drop down box to load onto screen
-        actions.move_to_element(LogInButton)
-        actions.click()
-        actions.perform()
+        for i in range(PT.NUM_RETRIES):
+            try:
+                actions = ActionChains(self.browser)
+                actions.move_to_element(profileIcon)
+                actions.pause(PT.WAIT_TIME) # wait for element the drop down box to load onto screen
+                actions.move_to_element(LogInButton)
+                actions.click()
+                actions.perform()
+                break
+            except Exception as e:
+                self.logger.error("Exception: Attemp %s, We Failed to navigate to the steamLogInButton", i)
+
         return BDOLogInPage(self.browser)
 
         # click the logIn Button
 
     def getLogInStatus(self):
         # /html/body/div[4]/div/header/div/nav/div/ul
-        profileContainer = self.browser.find_element(By.CSS_SELECTOR, "ul.on:nth-child(1)")
-        print("Name: ", profileContainer.get_attribute("name"))
-        print("value: ", profileContainer.get_attribute("value"))
-        pass
+        try:
+            self.browser.find_element(By.CSS_SELECTOR, ".profile_name")
+            self.logger.info("User is Logged In")
+            return True
+        except Exception:
+            self.logger.info("User is Not Logged In")
+            return False
 
 
     # .after_login
@@ -100,10 +111,10 @@ class BDOLogInPage(Page):
         if PT.PageTools.waitUntilTitleIsEqual(self.browser, self.title, interval=0.1, timeout=PT.WAIT_TIME) is False:
             print("Failed to load BDOLogInPage...")
             raise ValueError("Failed to load BDOLogInPage...")
-            return None
         steamLoginButton = WebDriverWait(self.browser, PT.WAIT_TIME).until(EC.presence_of_element_located((By.CSS_SELECTOR, '#btnSteam')))
         # Scroll to log in button
         self.browser.execute_script("arguments[0].scrollIntoView();", steamLoginButton)
+        time.sleep(2)
         steamLoginButton.click()
         return SteamLogInPage(self.browser)
 

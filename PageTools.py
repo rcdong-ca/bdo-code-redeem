@@ -2,12 +2,14 @@ from selenium.webdriver import Firefox
 from selenium.webdriver.common.keys import Keys
 import time
 import os
+import logging
 
 LOGDIR_PATH = os.getcwd() + "/logs/"
-WAIT_TIME = 5
+LOGFILE_PATH = LOGDIR_PATH + "ScriptLogs.log"
+WAIT_TIME = 3
+NUM_RETRIES = 3
 
 class PageTools:
-    
 
     @staticmethod
     def saveScreenShot(browser: Firefox, path: str):

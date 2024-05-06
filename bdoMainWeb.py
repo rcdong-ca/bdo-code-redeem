@@ -1,17 +1,14 @@
 from selenium.webdriver import Firefox
 from selenium.webdriver.firefox.firefox_profile import FirefoxProfile
 from selenium.webdriver.firefox.options import Options
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException
-
+import traceback
+import logging
 
 import Page
 import PageTools as PT
 import GarmothWeb as GM
 
-import os
 
 DEFAULT_PROFILE = "/Users/richard/Library/Application Support/Firefox/Profiles/zjy78xik.default-release"
 
@@ -23,19 +20,23 @@ class BdoWeb:
         self.browser = browser
     
     def steamLogIn(self, username: str = "", password: str = "") -> bool:
-        bdoHomePage = Page.BDOHomePage(self.browser)
-        bdoLogInPage = bdoHomePage.navigateToLogInPage()
-        steamLogInPage = bdoLogInPage.navigateToSteamLogIn()
-        steamLogInPage.logIn(username, password)
-        return True
-    
-    def getLoginStatus(self) -> bool:
         try:
+            if (self.getLoginStatus()):
+                return True
+        
             bdoHomePage = Page.BDOHomePage(self.browser)
-            bdoHomePage.navigateToPage()
+            bdoLogInPage = bdoHomePage.navigateToLogInPage()
+            steamLogInPage = bdoLogInPage.navigateToSteamLogIn()
+            steamLogInPage.logIn(username, password)
             return True
-        except TimeoutException:
-           return False
+        except Exception as e:
+            print(e)
+            print("failed to login")
+            return False
+        
+    def getLoginStatus(self) -> bool:
+        bdoHomePage = Page.BDOHomePage(self.browser)
+        return bdoHomePage.getLogInStatus()
 
         # Page.BDOHomePage.getLogInStatus(self.browser)
 
@@ -51,6 +52,9 @@ class BdoWeb:
 
 if __name__ == "__main__":
 
+    logger = logging.getLogger(__name__)
+    logging.basicConfig(filename=PT.LOGFILE_PATH, encoding='utf-8', level=logging.DEBUG)
+
     options = Options()
     # options.add_argument('-headless')
     options.profile =FirefoxProfile(DEFAULT_PROFILE)
@@ -60,13 +64,15 @@ if __name__ == "__main__":
         garmothWeb = GM.GarmothWeb(browser)
         codes = garmothWeb.getCouponCodes()
 
-        print(codes)
+        logger.info("GARMOTH CODES: %s", str(codes))
         bdoWeb = BdoWeb(browser)
         bdoWeb.steamLogIn()
         bdoWeb.inputCodes(codes)
-        
         browser.quit()
-    except Exception as e:
-        print(e)
+    except Exception:
+        errorTraceBack = traceback.format_exc()
+        logger.error(errorTraceBack)
+        print(errorTraceBack)
+        print("Please refer to to log file at for further details: ", PT.LOGFILE_PATH)
         browser.quit()
         
