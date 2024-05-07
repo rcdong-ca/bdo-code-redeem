@@ -10,10 +10,12 @@ import PageTools as PT
 import GarmothWeb as GM
 
 
+BDO_HOME_ASIA_URL = "https://blackdesert.pearlabyss.com/ASIA/en-US/Main"
+BDO_HOME_NA_EU_URL = "https://www.naeu.playblackdesert.com/en-US/Main/Index"
 DEFAULT_PROFILE = "/Users/richard/Library/Application Support/Firefox/Profiles/zjy78xik.default-release"
 
 class BdoWeb:
-    baseUrl = "https://www.naeu.playblackdesert.com/en-US/Main/Index"
+    baseUrl = BDO_HOME_NA_EU_URL
 
     browser: Firefox = None
     def __init__(self, browser: Firefox) -> None:
@@ -33,12 +35,25 @@ class BdoWeb:
             print(e)
             print("failed to login")
             return False
+    
+    def logIn(self, username: str = "", password: str = "") -> bool:
+        try:
+            if (self.getLoginStatus()):
+                return True
+        
+            bdoHomePage = Page.BDOHomePage(self.browser)
+            bdoLogInPage = bdoHomePage.navigateToLogInPage()
+            bdoLogInPage.logIn(username, password)
+            return True
+        except Exception as e:
+            print(e)
+            print("failed to login")
+            return False
         
     def getLoginStatus(self) -> bool:
         bdoHomePage = Page.BDOHomePage(self.browser)
         return bdoHomePage.getLogInStatus()
 
-        # Page.BDOHomePage.getLogInStatus(self.browser)
 
     def inputCodes(self, codes: list):
         try:
@@ -67,6 +82,7 @@ if __name__ == "__main__":
         logger.info("GARMOTH CODES: %s", str(codes))
         bdoWeb = BdoWeb(browser)
         bdoWeb.steamLogIn()
+        # bdoWeb.logIn("rcdong123@gmail.com", "Shadow98127!")
         bdoWeb.inputCodes(codes)
         browser.quit()
     except Exception:

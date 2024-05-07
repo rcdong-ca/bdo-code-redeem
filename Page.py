@@ -1,6 +1,5 @@
 from selenium.webdriver import Firefox
 from selenium.webdriver.common.by import By
-from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.action_chains import ActionChains
@@ -67,8 +66,6 @@ class BDOHomePage(Page):
             return False
 
 
-    # .after_login
-
 
 class SteamLogInPage(Page):
     
@@ -118,10 +115,14 @@ class BDOLogInPage(Page):
         steamLoginButton.click()
         return SteamLogInPage(self.browser)
 
-    def logIn(cls, userName: str, password: str):
+    def logIn(self, userName: str, password: str):
         # I do not have normal steam account D: Nor am I willing to shill out cash for this
-        pass
-
+        userContainer = WebDriverWait(self.browser, PT.WAIT_TIME).until(EC.presence_of_element_located((By.CSS_SELECTOR, '#_email')))
+        passContainer = WebDriverWait(self.browser, PT.WAIT_TIME).until(EC.presence_of_element_located((By.CSS_SELECTOR, '#_password')))
+        logInButton = WebDriverWait(self.browser, PT.WAIT_TIME).until(EC.presence_of_element_located((By.CSS_SELECTOR, '#btnLogin')))
+        userContainer.send_keys(userName)
+        passContainer.send_keys(password)
+        logInButton.click()
 
 
 class BDOCouponPage(Page):
@@ -146,6 +147,13 @@ class BDOCouponPage(Page):
             self.browser.find_element(By.CSS_SELECTOR, "#submitCoupon").click()
             # an alert will occur next. 3 kinds of alerts to handle (already claimed, cliam reward, expired)
             # handle only the already used and claim reward alerts
-            time.sleep(2)
-            self.browser.switch_to.alert.accept()
+            time.sleep(1) # wait for the alert to load...
+
+            # Two options:
+            # 1. Code input sucess. Cancel and Ok button <-- we want cancel to input more codes
+            # 2. Code Input Failed. Ok button
+            try:
+                self.browser.switch_to.alert.dismiss() # There should not be a dismiss option
+            except Exception:
+                self.browser.switch_to.alert.accept()
             couponContainer.clear()
