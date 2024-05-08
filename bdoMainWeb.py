@@ -84,7 +84,7 @@ if __name__ == "__main__":
 
     options = Options()
     # options.add_argument('-headless')
-    options.profile =FirefoxProfile(config["FirefoxProfilePath"])
+    options.profile =FirefoxProfile(config["FFPROFILEPATH"])
     browser = Firefox(options=options)
 
     try:
@@ -94,10 +94,10 @@ if __name__ == "__main__":
         logger.info("GARMOTH CODES: %s", str(codes))
         bdoWeb = BdoWeb(browser)
 
-        if (config["LoginMethod"] == "Steam"):
+        if (config["LOGINMETHOD"] == "Steam"):
             bdoWeb.steamLogIn()
         else:
-            bdoWeb.logIn(config["Username"], config["Password"])
+            bdoWeb.logIn(config["USERNAME"], config["PASSWORD"])
         
         bdoWeb.inputCodes(codes)
         browser.quit()
