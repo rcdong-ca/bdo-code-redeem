@@ -152,8 +152,7 @@ class BDOCouponPage(Page):
             # Two options:
             # 1. Code input sucess. Cancel and Ok button <-- we want cancel to input more codes
             # 2. Code Input Failed. Ok button
-            try:
-                self.browser.switch_to.alert.dismiss() # There should not be a dismiss option
-            except Exception:
-                self.browser.switch_to.alert.accept()
+            alertText = self.browser.switch_to.alert.text
+            self.browser.switch_to.alert.dismiss()
+            self.logger.info("code: %s input sucessful: Alert text: %s", code, alertText)
             couponContainer.clear()

@@ -1,0 +1,9 @@
+#Comment: This describes your account information, etc.
+#Describes some characteristics and preferences
+---
+
+Username: your@email.com
+Password: yourpassword
+FirefoxProfilePath: "/Users/richard/Library/Application Support/Firefox/Profiles/zjy78xik.default-release"
+Region: "NAEU"  # Choose Region
+LoginMethod: "Steam" # Choose login method: 1. PearlAbyss, 2. Steam (doesn't require username and password)

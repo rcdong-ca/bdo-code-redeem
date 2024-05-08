@@ -5,6 +5,8 @@ from selenium.common.exceptions import TimeoutException
 import traceback
 import logging
 
+import yaml
+
 import Page
 import PageTools as PT
 import GarmothWeb as GM
@@ -12,14 +14,24 @@ import GarmothWeb as GM
 
 BDO_HOME_ASIA_URL = "https://blackdesert.pearlabyss.com/ASIA/en-US/Main"
 BDO_HOME_NA_EU_URL = "https://www.naeu.playblackdesert.com/en-US/Main/Index"
-DEFAULT_PROFILE = "/Users/richard/Library/Application Support/Firefox/Profiles/zjy78xik.default-release"
+# DEFAULT_PROFILE = "/Users/richard/Library/Application Support/Firefox/Profiles/zjy78xik.default-release"
+
+logger = logging.getLogger(__name__)
+logging.basicConfig(filename=PT.LOGFILE_PATH, encoding='utf-8', level=logging.INFO, filemode='w')
 
 class BdoWeb:
     baseUrl = BDO_HOME_NA_EU_URL
-
     browser: Firefox = None
-    def __init__(self, browser: Firefox) -> None:
+    def __init__(self, browser: Firefox, region="NAEU") -> None:
         self.browser = browser
+        if (region == "NAEU"):
+            self.baseUrl = BDO_HOME_NA_EU_URL
+        elif (region == "ASIA"):
+            self.baseUrl = BDO_HOME_ASIA_URL
+        else:
+            logger.error("Invalid Region: %s, please check config confile again")
+            raise ValueError("Invalid Region: ", region)
+
     
     def steamLogIn(self, username: str = "", password: str = "") -> bool:
         try:
@@ -32,13 +44,13 @@ class BdoWeb:
             steamLogInPage.logIn(username, password)
             return True
         except Exception as e:
-            print(e)
-            print("failed to login")
+            logger.error("Failed to logIn via steam")
             return False
     
     def logIn(self, username: str = "", password: str = "") -> bool:
         try:
             if (self.getLoginStatus()):
+                logger.info("User already loggedin!")
                 return True
         
             bdoHomePage = Page.BDOHomePage(self.browser)
@@ -46,8 +58,8 @@ class BdoWeb:
             bdoLogInPage.logIn(username, password)
             return True
         except Exception as e:
-            print(e)
-            print("failed to login")
+            logger.error("BDO standard log in Failed: %s", e)
+            print("failed to login: ", e)
             return False
         
     def getLoginStatus(self) -> bool:
@@ -55,24 +67,24 @@ class BdoWeb:
         return bdoHomePage.getLogInStatus()
 
 
-    def inputCodes(self, codes: list):
+    def inputCodes(self, codes: list) -> True:
         try:
             bdoCouponPage = Page.BDOCouponPage(self.browser)
             bdoCouponPage.navigateToPage()
             bdoCouponPage.inputCode(codes)
         except Exception as e:
-            print(e)
-            PT.PageTools.saveScreenShot(self.browser, "failedINputCode.png")
+            logger.error("Failed to Input code: %s", e)
+            return False
 
 
 if __name__ == "__main__":
 
-    logger = logging.getLogger(__name__)
-    logging.basicConfig(filename=PT.LOGFILE_PATH, encoding='utf-8', level=logging.DEBUG)
+
+    config = yaml.safe_load(open("./config.yml"))
 
     options = Options()
     # options.add_argument('-headless')
-    options.profile =FirefoxProfile(DEFAULT_PROFILE)
+    options.profile =FirefoxProfile(config["FirefoxProfilePath"])
     browser = Firefox(options=options)
 
     try:
@@ -81,8 +93,12 @@ if __name__ == "__main__":
 
         logger.info("GARMOTH CODES: %s", str(codes))
         bdoWeb = BdoWeb(browser)
-        bdoWeb.steamLogIn()
-        # bdoWeb.logIn("rcdong123@gmail.com", "Shadow98127!")
+
+        if (config["LoginMethod"] == "Steam"):
+            bdoWeb.steamLogIn()
+        else:
+            bdoWeb.logIn(config["Username"], config["Password"])
+        
         bdoWeb.inputCodes(codes)
         browser.quit()
     except Exception:
