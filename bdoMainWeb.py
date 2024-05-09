@@ -79,9 +79,8 @@ class BdoWeb:
 
 if __name__ == "__main__":
 
-
-    config = yaml.safe_load(open("./config.yml"))
-
+    configPath = PT.ABS_PATH + "config.yml"
+    config = yaml.safe_load(open(configPath))
     options = Options()
     # options.add_argument('-headless')
     options.profile =FirefoxProfile(config["FFPROFILEPATH"])

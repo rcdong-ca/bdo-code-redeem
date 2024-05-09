@@ -4,8 +4,9 @@ import time
 import os
 import logging
 
-LOGDIR_PATH = os.getcwd() + "/logs/"
-LOGFILE_PATH = LOGDIR_PATH + "ScriptLogs.log"
+ABS_PATH = os.path.dirname(os.path.realpath(__file__)) + "/"
+LOGDIR_PATH = ABS_PATH + "/logs/"
+LOGFILE_PATH = LOGDIR_PATH + "/ScriptLogs.log"
 WAIT_TIME = 3
 NUM_RETRIES = 3
 
