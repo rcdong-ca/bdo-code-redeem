@@ -1,5 +1,6 @@
 # bdo-code-redeem
-(In progress) Automatically redeems the gift codes for the game bdo (Never missing those high cron codes again)
+(In progress) 
+Automatically redeems the gift codes for the game Black Desert Online NA (Asia in progress)
 
 
 ### Required
@@ -11,7 +12,7 @@ Unix Cron Job document only for now, haven't tried on Windows yet:
 To utilize this script, please configure the config.yml file accordingly. There will be two log in options suported, Steam login and Pearl Abyss Login. Please follow the tips in the config.yml file to selection your options correctly.
 
 ### Pearl Abyss Loging
-Follow the config.yml file. I do not believe it requires 2faa, (not in my side) so this is the easiest to set up
+Follow the config.yml file. 
 Please look at CronJob section next
 
 #### Steam Logins
@@ -49,23 +50,6 @@ Feel free to change the log file location
 
 
 
-
-
-
-
-
-### Design:
-    1. Idea is to utilize garmoth.com as the website where we will obtain the codes. Credits to them. The information is stored as HTML so we will use beautiful soup to obtain the information.
-        - note: As the plan is to run this as a cron job, we want to check
-        for codes that have already been redeemed. Perhaps we will keep a 
-        local file to track this informatino
-
-    2. The code redemption will be on BDO's official website. One will require user account information (My usage is on Steam) to access the code redemption option. This step will require more interaction, so I believe selenium will be required to achieve this,
-        - note: Steam Guard may be trouble some to handle. Browers uses a cookie to make it so we don't have to do passcode repeatedly. Look into how this can be accomplished for this script
-
-
-Apr19: Obtained codes from garmoth.com
-
-Apr 22: Met a blocking phase, once you redeem a code, you will navigate to a unique page,
-a page whose url I forgot to save. This perhaps may lead to limited testing practices as
-we can only redeem a code once.
+### In progress:
+    1. Add Asia Support
+    2. Add a GUI
