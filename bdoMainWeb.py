@@ -7,38 +7,29 @@ import logging
 
 import yaml
 
-import Page
+import Page as Page
 import PageTools as PT
 import GarmothWeb as GM
 
 
-BDO_HOME_ASIA_URL = "https://blackdesert.pearlabyss.com/ASIA/en-US/Main"
-BDO_HOME_NA_EU_URL = "https://www.naeu.playblackdesert.com/en-US/Main/Index"
-# DEFAULT_PROFILE = "/Users/richard/Library/Application Support/Firefox/Profiles/zjy78xik.default-release"
+DEFAULT_PROFILE = "/Users/richard/Library/Application Support/Firefox/Profiles/zjy78xik.default-release"
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(filename=PT.LOGFILE_PATH, encoding='utf-8', level=logging.INFO, filemode='w')
 
 class BdoWeb:
-    baseUrl = BDO_HOME_NA_EU_URL
     browser: Firefox = None
-    def __init__(self, browser: Firefox, region="NAEU") -> None:
-        self.browser = browser
-        if (region == "NAEU"):
-            self.baseUrl = BDO_HOME_NA_EU_URL
-        elif (region == "ASIA"):
-            self.baseUrl = BDO_HOME_ASIA_URL
-        else:
-            logger.error("Invalid Region: %s, please check config confile again")
-            raise ValueError("Invalid Region: ", region)
+    region: int = -1
 
+    def __init__(self, browser: Firefox, region: int) -> None:
+        self.browser = browser
+        self.region = region
     
     def steamLogIn(self, username: str = "", password: str = "") -> bool:
         try:
             if (self.getLoginStatus()):
                 return True
-        
-            bdoHomePage = Page.BDOHomePage(self.browser)
+            bdoHomePage = Page.BDOHomePage(self.browser, self.region)
             bdoLogInPage = bdoHomePage.navigateToLogInPage()
             steamLogInPage = bdoLogInPage.navigateToSteamLogIn()
             steamLogInPage.logIn(username, password)
@@ -53,13 +44,12 @@ class BdoWeb:
                 logger.info("User already loggedin!")
                 return True
         
-            bdoHomePage = Page.BDOHomePage(self.browser)
+            bdoHomePage = Page.BDOHomePage(self.browser, self.region)
             bdoLogInPage = bdoHomePage.navigateToLogInPage()
             bdoLogInPage.logIn(username, password)
             return True
         except Exception as e:
             logger.error("BDO standard log in Failed: %s", e)
-            print("failed to login: ", e)
             return False
         
     def getLoginStatus(self) -> bool:
@@ -67,14 +57,16 @@ class BdoWeb:
         return bdoHomePage.getLogInStatus()
 
 
-    def inputCodes(self, codes: list) -> True:
-        try:
-            bdoCouponPage = Page.BDOCouponPage(self.browser)
-            bdoCouponPage.navigateToPage()
-            bdoCouponPage.inputCode(codes)
-        except Exception as e:
-            logger.error("Failed to Input code: %s", e)
-            return False
+    def inputCodes(self, codes: list):
+        if (self.region == PT.Region.NAEU):
+            bdoCouponPage = Page.BDONAEUCouponPage(self.browser)
+        elif (self.region == PT.Region.ASIA):
+            bdoCouponPage = Page.BDOASIACouponPage(self.browser)
+        else:
+            logger.error("Incorrect region parameter. Please refor to config again...")
+        bdoCouponPage.navigateToPage()
+
+        bdoCouponPage.inputCodes(codes)
 
 
 if __name__ == "__main__":
@@ -85,13 +77,16 @@ if __name__ == "__main__":
     # options.add_argument('-headless')
     options.profile =FirefoxProfile(config["FFPROFILEPATH"])
     browser = Firefox(options=options)
-
+    region = PT.Region.translateRegion(config["REGION"])
+    logger.info("BDO account based in %s region", config["REGION"])
     try:
         garmothWeb = GM.GarmothWeb(browser)
         codes = garmothWeb.getCouponCodes()
 
+        # codes = ["ABCDEFGHIJKLMNOP"]
+
         logger.info("GARMOTH CODES: %s", str(codes))
-        bdoWeb = BdoWeb(browser)
+        bdoWeb = BdoWeb(browser, region)
 
         if (config["LOGINMETHOD"] == "Steam"):
             bdoWeb.steamLogIn()
@@ -99,11 +94,11 @@ if __name__ == "__main__":
             bdoWeb.logIn(config["USERNAME"], config["PASSWORD"])
         
         bdoWeb.inputCodes(codes)
+        logger.info("Code has been inputted successfully. Now closing program")
         browser.quit()
     except Exception:
         errorTraceBack = traceback.format_exc()
         logger.error(errorTraceBack)
         print(errorTraceBack)
         print("Please refer to to log file at for further details: ", PT.LOGFILE_PATH)
-        browser.quit()
         

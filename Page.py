@@ -8,8 +8,9 @@ import PageTools as PT
 import time
 import logging
 
-BDO_HOME_URL = "https://www.naeu.playblackdesert.com/en-US/Main/Index?_region="
-BDO_LOGIN_URL = loginUrl = "https://account.pearlabyss.com/en-US/Member/Login?_returnUrl=https%3a%2f%2faccount.pearlabyss.com%2fen-US%2fMember%2fLogin%2fAuthorizeOauth%3fresponse_type%3dcode%26scope%3dprofile%26state%3dQ%252bzMgd6tBby5mQ9xmezhUvcIQoJTXxh0mjtkzX6dpeXOk%252fcGDcXeD4ZuesTjnTuYi%252b2pM%252bMX%252bsrFjsKTInwxSlHcMXCIdIu2ukqF0yheqpc%253d%26client_id%3dclient_id%26redirect_uri%3dhttps%3a%2f%2fwww.naeu.playblackdesert.com%2fen-US%2fLogin%2fPearlabyss%2fOauth2CallBack%26isLogout%3dFalse%26redirectAccountUri%3d"
+
+BDO_NAEU_HOME_URL = "https://www.naeu.playblackdesert.com/en-US/Main/Index?_region="
+BDO_ASIA_HOME_URL = "https://blackdesert.pearlabyss.com/ASIA/en-US/Main"
 
 
 
@@ -23,17 +24,20 @@ class Page():
         logging.basicConfig(filename=PT.LOGFILE_PATH, encoding='utf-8', level=logging.DEBUG)
 
 class BDOHomePage(Page):
-    url = BDO_HOME_URL
+    url = BDO_NAEU_HOME_URL
     title = "Black Desert NA/EU – The Start of Your Adventure | Pearl Abyss"
     
-    def __init__(self, browser) -> None:
+    def __init__(self, browser, region=PT.Region.NAEU) -> None:
         super().__init__(browser)
-        # self.navigateToPage()
-        # assert self.browser.title == self.title, "Not at BDO Home Page"
+        if region == PT.Region.ASIA:
+            self.url = BDO_ASIA_HOME_URL
 
     def navigateToLogInPage(self):
         if (self.browser.title != self.title):
             self.browser.get(self.url)
+
+        # those logging into a region different from their recommended region
+        self.byPassRegionAlert()
 
         self.logger.info("navigating to BDOLoginPage...")
         # hover over profile button to
@@ -50,10 +54,7 @@ class BDOHomePage(Page):
                 break
             except Exception as e:
                 self.logger.error("Exception: Attemp %s, We Failed to navigate to the steamLogInButton", i)
-
         return BDOLogInPage(self.browser)
-
-        # click the logIn Button
 
     def getLogInStatus(self):
         # /html/body/div[4]/div/header/div/nav/div/ul
@@ -64,11 +65,20 @@ class BDOHomePage(Page):
         except Exception:
             self.logger.info("User is Not Logged In")
             return False
-
+    
+    
+    #Logging into a different region will generate an alert
+    def byPassRegionAlert(self):
+        try:
+            #modal_select_region > div > div.inner_content > a
+            stayOnWebsiteButton = self.browser.find_element(By.CSS_SELECTOR, "#_modal_select_region > div > div.inner_content > p.link_line_wrap > button")
+            stayOnWebsiteButton.click()
+            self.logger.info("BDO: Attempting Log In to another region")
+        except Exception:
+            self.logger.info("BDO: No Region Alert")
 
 
 class SteamLogInPage(Page):
-    
     title = "Steam Community"
     def __init__(self, browser) -> None:
         super().__init__(browser)
@@ -92,7 +102,6 @@ class SteamLogInPage(Page):
 
 
 class BDOLogInPage(Page):
-    url = BDO_LOGIN_URL
     title = "Log in to Pearl Abyss | Pearl Abyss"
 
     def __init__(self, browser) -> None:
@@ -125,7 +134,60 @@ class BDOLogInPage(Page):
         logInButton.click()
 
 
-class BDOCouponPage(Page):
+class BDOASIACouponPage(Page):
+    url = "https://store.pearlabyss.com/BlackDesert/Asia/en-US/Shop/Coupon"
+    def __init__(self, browser) -> None:
+        super().__init__(browser)
+    
+    def navigateToPage(self) ->None:
+        self.browser.get(self.url)
+        assert self.browser.title == "Pearl Abyss Store"
+    
+    def inputCodes(self, codes: list):
+        assert self.browser.title == "Pearl Abyss Store"
+        time.sleep(1)
+        self.byPassRegionAlert()
+
+        time.sleep(3) # TODO:: There should a proper way to do this. The wait until visability does not work
+        # Asia's codes are seperated into boxes, will have to clear each one by one
+        couponInputGroup = WebDriverWait(self.browser, PT.WAIT_TIME).until(EC.visibility_of_element_located((By.CSS_SELECTOR, '.coupon_input_group')))
+        codeContainers = couponInputGroup.find_elements(By.CSS_SELECTOR, "input[id]")
+        button = self.browser.find_element(By.CSS_SELECTOR, "#submitCoupon")
+
+        for code in codes:
+            # lets see if we can send keys completely, as it does on the browser side too
+
+            codeContainers[0].click() 
+            codeContainers[0].send_keys(code)
+            button.click()
+            for i in range(PT.NUM_RETRIES):
+                try:
+                    alertText = self.browser.switch_to.alert.text
+                    self.browser.switch_to.alert.dismiss()
+                    self.logger.info("code: %s input: Alert text: %s", code, alertText)
+                    break
+                except Exception:
+                    self.logger.error("Attempt %d: Cannot Find alertText after code submit...", i)
+
+            # clear the codes one by one
+            self.logger.info("Clearing the code containers")
+            for codeBlock in codeContainers:
+                codeBlock.clear()
+    
+    def byPassRegionAlert(self):
+        try:
+            #modal_select_region > div > div.inner_content > a
+            stayOnWebsiteButton = self.browser.find_element(By.CSS_SELECTOR, ".link_stay")
+            stayOnWebsiteButton.click()
+            # wait for alert to fully disappear
+            self.logger.info("BDO: Now waiting for alert to disappear")
+            WebDriverWait(self.browser, PT.WAIT_TIME).until_not(EC.presence_of_element_located(stayOnWebsiteButton))
+            self.logger.info("BDO: Clear off Region Alert Success")
+        except Exception:
+            self.logger.info("BDO: No Region Alert")
+
+
+class BDONAEUCouponPage(Page):
     url = "https://payment.naeu.playblackdesert.com/en-US/Shop/Coupon/"
 
     def __init__(self, browser) -> None:
@@ -136,23 +198,24 @@ class BDOCouponPage(Page):
         assert self.browser.title == "Redeem Coupon Code | Black Desert NA/EU", \
             "Cannot reach coupon page, perhaps you are not logged in"
     
-    def inputCode(self, codes: list):
+    def inputCodes(self, codes: list):
+        self.byPassRegionAlert()
 
-        couponContainer = self.browser.find_element(By.CSS_SELECTOR, "#couponCode")
-
+        couponContainer = WebDriverWait(self.browser, PT.WAIT_TIME).until(EC.presence_of_element_located((By.CSS_SELECTOR, '#couponCode')))
         for code in codes:
             couponContainer.click()
             couponContainer.send_keys(code)
             # click the use button
+            time.sleep(2)
             self.browser.find_element(By.CSS_SELECTOR, "#submitCoupon").click()
             # an alert will occur next. 3 kinds of alerts to handle (already claimed, cliam reward, expired)
             # handle only the already used and claim reward alerts
-            time.sleep(1) # wait for the alert to load...
+            time.sleep(3) # wait for the alert to load...
 
             # Two options:
             # 1. Code input sucess. Cancel and Ok button <-- we want cancel to input more codes
             # 2. Code Input Failed. Ok button
             alertText = self.browser.switch_to.alert.text
             self.browser.switch_to.alert.dismiss()
-            self.logger.info("code: %s input sucessful: Alert text: %s", code, alertText)
+            self.logger.info("code: %s input: Alert text: %s", code, alertText)
             couponContainer.clear()

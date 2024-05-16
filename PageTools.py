@@ -3,11 +3,12 @@ from selenium.webdriver.common.keys import Keys
 import time
 import os
 import logging
+from enum import Enum
 
 ABS_PATH = os.path.dirname(os.path.realpath(__file__)) + "/"
 LOGDIR_PATH = ABS_PATH + "/logs/"
 LOGFILE_PATH = LOGDIR_PATH + "/ScriptLogs.log"
-WAIT_TIME = 3
+WAIT_TIME = 2
 NUM_RETRIES = 3
 
 class PageTools:
@@ -34,3 +35,15 @@ class PageTools:
             else:
                 return False
         return True
+
+class Region(Enum):
+    NAEU = 0
+    ASIA = 1
+
+    @classmethod
+    def translateRegion(cls, regionStr: str) -> int:
+        if (regionStr == "NAEU"):
+            return cls.NAEU
+        elif regionStr == "ASIA":
+            return cls.ASIA
+
