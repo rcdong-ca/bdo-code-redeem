@@ -198,7 +198,21 @@ class BDONAEUCouponPage(Page):
         assert self.browser.title == "Redeem Coupon Code | Black Desert NA/EU", \
             "Cannot reach coupon page, perhaps you are not logged in"
     
+    def byPassRegionAlert(self):
+        try:
+            #modal_select_region > div > div.inner_content > a
+            stayOnWebsiteButton = self.browser.find_element(By.CSS_SELECTOR, ".link_stay")
+            stayOnWebsiteButton.click()
+            # wait for alert to fully disappear
+            self.logger.info("BDO: Now waiting for alert to disappear")
+            WebDriverWait(self.browser, PT.WAIT_TIME).until_not(EC.presence_of_element_located(stayOnWebsiteButton))
+            self.logger.info("BDO: Clear off Region Alert Success")
+        except Exception:
+            self.logger.info("BDO: No Region Alert")
+    
     def inputCodes(self, codes: list):
+
+
         self.byPassRegionAlert()
 
         couponContainer = WebDriverWait(self.browser, PT.WAIT_TIME).until(EC.presence_of_element_located((By.CSS_SELECTOR, '#couponCode')))
@@ -219,3 +233,4 @@ class BDONAEUCouponPage(Page):
             self.browser.switch_to.alert.dismiss()
             self.logger.info("code: %s input: Alert text: %s", code, alertText)
             couponContainer.clear()
+    
