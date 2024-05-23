@@ -51,5 +51,5 @@ Feel free to change the log file location
 
 
 ### In progress:
-    1. Add Asia Support
+    1. Add Asia Support: Completed May 23
     2. Add a GUI
