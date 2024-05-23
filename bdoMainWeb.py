@@ -81,21 +81,24 @@ if __name__ == "__main__":
     logger.info("BDO account based in %s region", config["REGION"])
     try:
         garmothWeb = GM.GarmothWeb(browser)
+        garmothWeb.selectRegion("ASIA")
         codes = garmothWeb.getCouponCodes()
+        if len(codes) > 0:
+            logger.info("GARMOTH CODES: %s", str(codes))
+            bdoWeb = BdoWeb(browser, region)
 
-        # codes = ["ABCDEFGHIJKLMNOP"]
-
-        logger.info("GARMOTH CODES: %s", str(codes))
-        bdoWeb = BdoWeb(browser, region)
-
-        if (config["LOGINMETHOD"] == "Steam"):
-            bdoWeb.steamLogIn()
+            if (config["LOGINMETHOD"] == "Steam"):
+                bdoWeb.steamLogIn()
+            else:
+                bdoWeb.logIn(config["USERNAME"], config["PASSWORD"])
+            
+            bdoWeb.inputCodes(codes)
+            logger.info("Code has been inputted successfully. Now closing program")
         else:
-            bdoWeb.logIn(config["USERNAME"], config["PASSWORD"])
-        
-        bdoWeb.inputCodes(codes)
-        logger.info("Code has been inputted successfully. Now closing program")
+            logger.info(f"No codes available for region: {region}")
+        logger.info("Closing browser...")
         browser.quit()
+        logger.info("Script now complete")
     except Exception:
         errorTraceBack = traceback.format_exc()
         logger.error(errorTraceBack)
