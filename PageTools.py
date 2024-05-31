@@ -11,6 +11,20 @@ LOGFILE_PATH = LOGDIR_PATH + "/ScriptLogs.log"
 WAIT_TIME = 2
 NUM_RETRIES = 3
 
+
+# PARAM names for config.yml. Will also serve as Label names for the
+class ConfigConstants:
+    region = "Region"
+    loginMethod = "Login Method"
+    ffProfilePath = "Firefox Profile Path"
+    username = "Username"
+    password = "Password"
+
+# general logger
+logger = logging.getLogger(__name__)
+logging.basicConfig(filename=LOGFILE_PATH, encoding='utf-8', level=logging.INFO, filemode='w')
+
+
 class PageTools:
 
     @staticmethod

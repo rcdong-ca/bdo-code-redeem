@@ -3,19 +3,15 @@ from selenium.webdriver.firefox.firefox_profile import FirefoxProfile
 from selenium.webdriver.firefox.options import Options
 from selenium.common.exceptions import TimeoutException
 import traceback
-import logging
 
 import yaml
 
 import Page as Page
-import PageTools as PT
+from PageTools import *
 import GarmothWeb as GM
 
 
 DEFAULT_PROFILE = "/Users/richard/Library/Application Support/Firefox/Profiles/zjy78xik.default-release"
-
-logger = logging.getLogger(__name__)
-logging.basicConfig(filename=PT.LOGFILE_PATH, encoding='utf-8', level=logging.INFO, filemode='w')
 
 class BdoWeb:
     browser: Firefox = None
@@ -58,9 +54,9 @@ class BdoWeb:
 
 
     def inputCodes(self, codes: list):
-        if (self.region == PT.Region.NAEU):
+        if (self.region == Region.NAEU):
             bdoCouponPage = Page.BDONAEUCouponPage(self.browser)
-        elif (self.region == PT.Region.ASIA):
+        elif (self.region == Region.ASIA):
             bdoCouponPage = Page.BDOASIACouponPage(self.browser)
         else:
             logger.error("Incorrect region parameter. Please refor to config again...")
@@ -71,14 +67,14 @@ class BdoWeb:
 
 if __name__ == "__main__":
 
-    configPath = PT.ABS_PATH + "config.yml"
+    configPath = ABS_PATH + "config.yml"
     config = yaml.safe_load(open(configPath))
     options = Options()
     # options.add_argument('-headless')
-    options.profile =FirefoxProfile(config["FFPROFILEPATH"])
+    options.profile =FirefoxProfile(config[ConfigConstants.ffProfilePath])
     browser = Firefox(options=options)
-    region = PT.Region.translateRegion(config["REGION"])
-    logger.info("BDO account based in %s region", config["REGION"])
+    region = Region.translateRegion(config[ConfigConstants.region])
+    logger.info("BDO account based in %s region", config[ConfigConstants.region])
     try:
         garmothWeb = GM.GarmothWeb(browser)
         garmothWeb.selectRegion("ASIA")
@@ -87,10 +83,10 @@ if __name__ == "__main__":
             logger.info("GARMOTH CODES: %s", str(codes))
             bdoWeb = BdoWeb(browser, region)
 
-            if (config["LOGINMETHOD"] == "Steam"):
+            if (config[ConfigConstants.loginMethod] == "Steam"):
                 bdoWeb.steamLogIn()
             else:
-                bdoWeb.logIn(config["USERNAME"], config["PASSWORD"])
+                bdoWeb.logIn(config[ConfigConstants.username], config[ConfigConstants.password])
             
             bdoWeb.inputCodes(codes)
             logger.info("Code has been inputted successfully. Now closing program")
@@ -103,5 +99,5 @@ if __name__ == "__main__":
         errorTraceBack = traceback.format_exc()
         logger.error(errorTraceBack)
         print(errorTraceBack)
-        print("Please refer to to log file at for further details: ", PT.LOGFILE_PATH)
+        print("Please refer to to log file at for further details: ", LOGFILE_PATH)
         
