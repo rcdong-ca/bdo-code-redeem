@@ -1,40 +1,20 @@
 import sys
 from PyQt6.QtCore import Qt
-from PyQt6.QtWidgets import (
-    QApplication,
-    QCheckBox,
-    QComboBox,
-    QDateEdit,
-    QDateTimeEdit,
-    QDial,
-    QDoubleSpinBox,
-    QFontComboBox,
-    QLabel,
-    QLCDNumber,
-    QLineEdit,
-    QMainWindow,
-    QProgressBar,
-    QPushButton,
-    QRadioButton,
-    QSlider,
-    QSpinBox,
-    QTimeEdit,
-    QVBoxLayout,
-    QWidget,
-    QHBoxLayout
-)
+from PyQt6.QtWidgets import *
 from PyQt6.QtGui import QPalette, QColor
 
 # Only needed for access to command line arguments
 import sys
-import customWidgets as CW
-from layout import *
+from logger import QPlainTextEditLogHandler
 
+from layout import *
 
 
 class MainWindow(QMainWindow):
 
     configLayout: QVBoxLayout = None
+    logHandler: logging.Handler = None
+
     def __init__(self):
         super(MainWindow, self).__init__()
 
@@ -42,15 +22,17 @@ class MainWindow(QMainWindow):
 
         layoutFirst = QHBoxLayout()
         configLayout = ConfigLayout()
+        logLayout = LogLayOut()
 
         layoutFirst.addLayout(configLayout)
-        layoutFirst.addWidget(CW.Color("Red"))
+        layoutFirst.addLayout(logLayout)
+
 
         widget = QWidget()
         widget.setLayout(layoutFirst)
         self.setCentralWidget(widget)
 
-        print(configLayout.getData())
+        self.logHandler = QPlainTextEditLogHandler(logLayout.getPlainTextWgt())
 
 
     def show_state(self, s):
@@ -58,12 +40,15 @@ class MainWindow(QMainWindow):
         print(s)
 
 
-app = QApplication(sys.argv)
+if __name__ == "__main__":
+    app = QApplication(sys.argv)
 
-window = MainWindow()
-window.show()
+    window = MainWindow()
+    window.show()
+    logging.getLogger().addHandler(window.logHandler)
+    logging.info("TEST: TEST TEST TEST ")
 
-app.exec()
+    app.exec()
 
 # Your application won't reach here until you exit and the event
 # loop has stopped.

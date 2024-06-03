@@ -17,14 +17,23 @@ class ConfigLayout(QVBoxLayout):
         self.ffprofileTipWgt = QLabel("Info: profile path can be found by typing 'about:profiles' into Firefox")
         self.usernameWgt = CW.LabelTextBox(ConfigConstants.username)
         self.passwordWgt = CW.LabelTextBox(ConfigConstants.password)
-        self.saveWgt = CW.SaveButton(self.saveData)
+
+        # Button layout
+        buttonLayOut = QHBoxLayout()
+        saveWgt = QPushButton("Save")
+        runWgt = QPushButton("run")
+        saveWgt.clicked.connect(self.saveData)
+        runWgt.clicked.connect(self.runCodeRedeem)
+        buttonLayOut.addWidget(saveWgt)
+        buttonLayOut.addWidget(runWgt)
+
         self.addWidget(self.regionWgt)
         self.addWidget(self.loginMethodWgt)
         self.addWidget(self.ffprofileWgt)
         self.addWidget(self.ffprofileTipWgt)
         self.addWidget(self.usernameWgt)
         self.addWidget(self.passwordWgt)
-        self.addWidget(self.saveWgt, 0, Qt.AlignmentFlag.AlignCenter)
+        self.addLayout(buttonLayOut)
         self.setSpacing(0)
         self.setContentsMargins(0,0,0,0)
         self.loadData()
@@ -58,4 +67,26 @@ class ConfigLayout(QVBoxLayout):
         }  
         with open(self.configPath, 'w') as outfile:
             yaml.dump(data, outfile, default_flow_style=False)
-            logger.info(f"Saving config information:\n {data}")
+            # logger.info(f"Saving config information:\n {data}")
+
+    def runCodeRedeem(self):
+        print("Run code redeem")
+        pass
+
+
+class LogLayOut (QVBoxLayout):
+    def __init__(self):
+        super().__init__()
+        self.textBoxWgt = QPlainTextEdit()
+        self.textBoxWgt.setReadOnly(True)
+        self.buttonWgt = QPushButton("Clear")
+        self.buttonWgt.clicked.connect(self.clearText)
+
+        self.addWidget(self.textBoxWgt, 0, Qt.AlignmentFlag.AlignCenter)
+        self.addWidget(self.buttonWgt, 0, Qt.AlignmentFlag.AlignCenter)
+
+    def clearText(self):
+        self.textBoxWgt.clear()
+
+    def getPlainTextWgt(self):
+        return self.textBoxWgt

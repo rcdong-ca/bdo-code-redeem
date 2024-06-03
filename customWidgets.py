@@ -16,18 +16,18 @@ class Color(QWidget):
 
 
 
-class SaveButton(QWidget):
-    buttonWgt = None
-    def __init__(self, myFunc):
-        super().__init__()
-        layout = QHBoxLayout()
-        self.buttonWgt = QPushButton("Save")
-        layout.addWidget(self.buttonWgt)
-        print("type if func: ", type(myFunc))
-        self.buttonWgt.clicked.connect(myFunc)
-        layout.setSpacing(0)
-        layout.setContentsMargins(0,0,0,0)
-        self.setLayout(layout)
+# class Button(QWidget):
+#     def __init__(self, myFunc):
+#         super().__init__()
+#         # layout = QHBoxLayout()
+#         self.buttonWgt = QPushButton("Save")
+#         # layout.addWidget(self.buttonWgt)
+#         print("type if func: ", type(myFunc))
+#         self.buttonWgt.clicked.connect(myFunc)
+#         # layout.setSpacing(0)
+#         # layout.setContentsMargins(0,0,0,0)
+#         # self.setLayout(layout)
+
 
 
 class LabelTextBox(QWidget):
