@@ -14,7 +14,6 @@ class GarmothWeb():
     region = ""
 
     def selectRegion(self, region: str):
-        region = "ASIA"
         # click region button
         WebDriverWait(self.browser, PT.WAIT_TIME).until(EC.presence_of_element_located((By.CSS_SELECTOR, \
             ".mr-4 > div:nth-child(1) > div:nth-child(1) > div:nth-child(1) > p:nth-child(1)"))).click()

@@ -10,6 +10,8 @@ import Page as Page
 from PageTools import *
 import GarmothWeb as GM
 
+import logging
+
 
 DEFAULT_PROFILE = "/Users/richard/Library/Application Support/Firefox/Profiles/zjy78xik.default-release"
 
@@ -31,13 +33,13 @@ class BdoWeb:
             steamLogInPage.logIn(username, password)
             return True
         except Exception as e:
-            logger.error("Failed to logIn via steam")
+            logging.error("Failed to logIn via steam")
             return False
     
     def logIn(self, username: str = "", password: str = "") -> bool:
         try:
             if (self.getLoginStatus()):
-                logger.info("User already loggedin!")
+                logging.info("User already loggedin!")
                 return True
         
             bdoHomePage = Page.BDOHomePage(self.browser, self.region)
@@ -45,7 +47,7 @@ class BdoWeb:
             bdoLogInPage.logIn(username, password)
             return True
         except Exception as e:
-            logger.error("BDO standard log in Failed: %s", e)
+            logging.error("BDO standard log in Failed: %s", e)
             return False
         
     def getLoginStatus(self) -> bool:
@@ -59,28 +61,29 @@ class BdoWeb:
         elif (self.region == Region.ASIA):
             bdoCouponPage = Page.BDOASIACouponPage(self.browser)
         else:
-            logger.error("Incorrect region parameter. Please refor to config again...")
+            logging.error("Incorrect region parameter. Please refor to config again...")
         bdoCouponPage.navigateToPage()
 
         bdoCouponPage.inputCodes(codes)
 
 
-if __name__ == "__main__":
-
+def runCodeRedeem():
+    # logging.getLogger().addHandler(logging.FileHandler(filename=LOGFILE_PATH,mode="a"))
     configPath = ABS_PATH + "config.yml"
     config = yaml.safe_load(open(configPath))
     options = Options()
-    # options.add_argument('-headless')
+    options.add_argument('-headless')
     options.profile =FirefoxProfile(config[ConfigConstants.ffProfilePath])
     browser = Firefox(options=options)
     region = Region.translateRegion(config[ConfigConstants.region])
-    logger.info("BDO account based in %s region", config[ConfigConstants.region])
+    logging.info("BDO account based in %s region", config[ConfigConstants.region])
     try:
         garmothWeb = GM.GarmothWeb(browser)
-        garmothWeb.selectRegion("ASIA")
+        garmothWeb.selectRegion("NAEU")
         codes = garmothWeb.getCouponCodes()
+        print(codes)
         if len(codes) > 0:
-            logger.info("GARMOTH CODES: %s", str(codes))
+            logging.info("GARMOTH CODES: %s", str(codes))
             bdoWeb = BdoWeb(browser, region)
 
             if (config[ConfigConstants.loginMethod] == "Steam"):
@@ -89,15 +92,15 @@ if __name__ == "__main__":
                 bdoWeb.logIn(config[ConfigConstants.username], config[ConfigConstants.password])
             
             bdoWeb.inputCodes(codes)
-            logger.info("Code has been inputted successfully. Now closing program")
+            logging.info("Code has been inputted successfully. Now closing program")
         else:
-            logger.info(f"No codes available for region: {region}")
-        logger.info("Closing browser...")
+            logging.info(f"No codes available for region: {region}")
+        logging.info("Closing browser...")
         browser.quit()
-        logger.info("Script now complete")
+        logging.info("Script now complete")
     except Exception:
         errorTraceBack = traceback.format_exc()
-        logger.error(errorTraceBack)
+        logging.error(errorTraceBack)
         print(errorTraceBack)
         print("Please refer to to log file at for further details: ", LOGFILE_PATH)
         

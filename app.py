@@ -46,8 +46,6 @@ if __name__ == "__main__":
     window = MainWindow()
     window.show()
     logging.getLogger().addHandler(window.logHandler)
-    logging.info("TEST: TEST TEST TEST ")
-
     app.exec()
 
 # Your application won't reach here until you exit and the event

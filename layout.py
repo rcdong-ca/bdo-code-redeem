@@ -70,8 +70,9 @@ class ConfigLayout(QVBoxLayout):
             # logger.info(f"Saving config information:\n {data}")
 
     def runCodeRedeem(self):
+        import bdoMainWeb
         print("Run code redeem")
-        pass
+        bdoMainWeb.runCodeRedeem()
 
 
 class LogLayOut (QVBoxLayout):

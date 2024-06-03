@@ -16,12 +16,9 @@ BDO_ASIA_HOME_URL = "https://blackdesert.pearlabyss.com/ASIA/en-US/Main"
 
 class Page():
     browser: Firefox = None
-    logger = None
 
     def __init__(self, browser) -> None:
         self.browser = browser
-        self.logger = logging.getLogger(__name__)
-        logging.basicConfig(filename=PT.LOGFILE_PATH, encoding='utf-8', level=logging.DEBUG)
 
 class BDOHomePage(Page):
     url = BDO_NAEU_HOME_URL
@@ -39,7 +36,7 @@ class BDOHomePage(Page):
         # those logging into a region different from their recommended region
         self.byPassRegionAlert()
 
-        self.logger.info("navigating to BDOLoginPage...")
+        logging.info("navigating to BDOLoginPage...")
         # hover over profile button to
         profileIcon = self.browser.find_element(By.CSS_SELECTOR, ".js-profileWrap") 
         LogInButton = self.browser.find_element(By.CSS_SELECTOR, "li.profile_remote_item:nth-child(1) > a:nth-child(1)")
@@ -53,17 +50,17 @@ class BDOHomePage(Page):
                 actions.perform()
                 break
             except Exception as e:
-                self.logger.error("Exception: Attemp %s, We Failed to navigate to the steamLogInButton", i)
+                logging.error("Exception: Attemp %s, We Failed to navigate to the steamLogInButton", i)
         return BDOLogInPage(self.browser)
 
     def getLogInStatus(self):
         # /html/body/div[4]/div/header/div/nav/div/ul
         try:
             self.browser.find_element(By.CSS_SELECTOR, ".profile_name")
-            self.logger.info("User is Logged In")
+            logging.info("User is Logged In")
             return True
         except Exception:
-            self.logger.info("User is Not Logged In")
+            logging.info("User is Not Logged In")
             return False
     
     
@@ -73,9 +70,9 @@ class BDOHomePage(Page):
             #modal_select_region > div > div.inner_content > a
             stayOnWebsiteButton = self.browser.find_element(By.CSS_SELECTOR, "#_modal_select_region > div > div.inner_content > p.link_line_wrap > button")
             stayOnWebsiteButton.click()
-            self.logger.info("BDO: Attempting Log In to another region")
+            logging.info("BDO: Attempting Log In to another region")
         except Exception:
-            self.logger.info("BDO: No Region Alert")
+            logging.info("BDO: No Region Alert")
 
 
 class SteamLogInPage(Page):
@@ -115,7 +112,7 @@ class BDOLogInPage(Page):
     def navigateToSteamLogIn(self) -> SteamLogInPage:
         # confirm we are on the BDOLogInPage
         if PT.PageTools.waitUntilTitleIsEqual(self.browser, self.title, interval=0.1, timeout=PT.WAIT_TIME) is False:
-            print("Failed to load BDOLogInPage...")
+            logging.error("Failed to load BDOLogInPage...")
             raise ValueError("Failed to load BDOLogInPage...")
         steamLoginButton = WebDriverWait(self.browser, PT.WAIT_TIME).until(EC.presence_of_element_located((By.CSS_SELECTOR, '#btnSteam')))
         # Scroll to log in button
@@ -164,13 +161,13 @@ class BDOASIACouponPage(Page):
                 try:
                     alertText = self.browser.switch_to.alert.text
                     self.browser.switch_to.alert.dismiss()
-                    self.logger.info("code: %s input: Alert text: %s", code, alertText)
+                    logging.info("code: %s input: Alert text: %s", code, alertText)
                     break
                 except Exception:
-                    self.logger.error("Attempt %d: Cannot Find alertText after code submit...", i)
+                    logging.error("Attempt %d: Cannot Find alertText after code submit...", i)
 
             # clear the codes one by one
-            self.logger.info("Clearing the code containers")
+            logging.info("Clearing the code containers")
             for codeBlock in codeContainers:
                 codeBlock.clear()
     
@@ -180,11 +177,11 @@ class BDOASIACouponPage(Page):
             stayOnWebsiteButton = self.browser.find_element(By.CSS_SELECTOR, ".link_stay")
             stayOnWebsiteButton.click()
             # wait for alert to fully disappear
-            self.logger.info("BDO: Now waiting for alert to disappear")
+            logging.info("BDO: Now waiting for alert to disappear")
             WebDriverWait(self.browser, PT.WAIT_TIME).until_not(EC.presence_of_element_located(stayOnWebsiteButton))
-            self.logger.info("BDO: Clear off Region Alert Success")
+            logging.info("BDO: Clear off Region Alert Success")
         except Exception:
-            self.logger.info("BDO: No Region Alert")
+            logging.info("BDO: No Region Alert")
 
 
 class BDONAEUCouponPage(Page):
@@ -204,11 +201,11 @@ class BDONAEUCouponPage(Page):
             stayOnWebsiteButton = self.browser.find_element(By.CSS_SELECTOR, ".link_stay")
             stayOnWebsiteButton.click()
             # wait for alert to fully disappear
-            self.logger.info("BDO: Now waiting for alert to disappear")
+            logging.info("BDO: Now waiting for alert to disappear")
             WebDriverWait(self.browser, PT.WAIT_TIME).until_not(EC.presence_of_element_located(stayOnWebsiteButton))
-            self.logger.info("BDO: Clear off Region Alert Success")
+            logging.info("BDO: Clear off Region Alert Success")
         except Exception:
-            self.logger.info("BDO: No Region Alert")
+            logging.info("BDO: No Region Alert")
     
     def inputCodes(self, codes: list):
 
@@ -220,17 +217,14 @@ class BDONAEUCouponPage(Page):
             couponContainer.click()
             couponContainer.send_keys(code)
             # click the use button
-            time.sleep(2)
             self.browser.find_element(By.CSS_SELECTOR, "#submitCoupon").click()
-            # an alert will occur next. 3 kinds of alerts to handle (already claimed, cliam reward, expired)
-            # handle only the already used and claim reward alerts
-            time.sleep(3) # wait for the alert to load...
+            time.sleep(2) # wait for the alert to load...
 
             # Two options:
             # 1. Code input sucess. Cancel and Ok button <-- we want cancel to input more codes
             # 2. Code Input Failed. Ok button
             alertText = self.browser.switch_to.alert.text
             self.browser.switch_to.alert.dismiss()
-            self.logger.info("code: %s input: Alert text: %s", code, alertText)
+            logging.info("code: %s input: Alert text: %s", code, alertText)
             couponContainer.clear()
     
