@@ -72,7 +72,7 @@ def runCodeRedeem():
     configPath = ABS_PATH + "config.yml"
     config = yaml.safe_load(open(configPath))
     options = Options()
-    options.add_argument('-headless')
+    # options.add_argument('-headless')
     options.profile =FirefoxProfile(config[ConfigConstants.ffProfilePath])
     browser = Firefox(options=options)
     region = Region.translateRegion(config[ConfigConstants.region])
@@ -81,9 +81,8 @@ def runCodeRedeem():
         garmothWeb = GM.GarmothWeb(browser)
         garmothWeb.selectRegion("NAEU")
         codes = garmothWeb.getCouponCodes()
-        print(codes)
+        logging.info("GARMOTH CODES: %s", str(codes))
         if len(codes) > 0:
-            logging.info("GARMOTH CODES: %s", str(codes))
             bdoWeb = BdoWeb(browser, region)
 
             if (config[ConfigConstants.loginMethod] == "Steam"):

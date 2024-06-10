@@ -9,7 +9,7 @@ import yaml
 class ConfigLayout(QVBoxLayout):
     configPath = os.path.dirname(os.path.abspath(__file__)) + "/config.yml"
 
-    def __init__(self):
+    def __init__(self, fn):
         super().__init__()
         self.regionWgt = CW.LabelComboBox(ConfigConstants.region, ["NAEU", "ASIA"])
         self.loginMethodWgt = CW.LabelComboBox(ConfigConstants.loginMethod, ["Steam", "PearlAbyss"])
@@ -23,7 +23,7 @@ class ConfigLayout(QVBoxLayout):
         saveWgt = QPushButton("Save")
         runWgt = QPushButton("run")
         saveWgt.clicked.connect(self.saveData)
-        runWgt.clicked.connect(self.runCodeRedeem)
+        runWgt.clicked.connect(fn)
         buttonLayOut.addWidget(saveWgt)
         buttonLayOut.addWidget(runWgt)
 

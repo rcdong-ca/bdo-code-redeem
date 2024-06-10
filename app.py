@@ -10,6 +10,36 @@ from logger import QPlainTextEditLogHandler
 from layout import *
 
 
+class Worker(QRunnable):
+    '''
+    Worker thread
+
+    Inherits from QRunnable to handler worker thread setup, signals and wrap-up.
+
+    :param callback: The function callback to run on this worker thread. Supplied args and
+                     kwargs will be passed through to the runner.
+    :type callback: function
+    :param args: Arguments to pass to the callback function
+    :param kwargs: Keywords to pass to the callback function
+
+    '''
+
+    def __init__(self, fn, *args, **kwargs):
+        super(Worker, self).__init__()
+        # Store constructor arguments (re-used for processing)
+        self.fn = fn
+        self.args = args
+        self.kwargs = kwargs
+
+    @pyqtSlot()
+    def run(self):
+        '''
+        Initialise the runner function with passed args, kwargs.
+        '''
+        self.fn(*self.args, **self.kwargs)
+
+
+
 class MainWindow(QMainWindow):
 
     configLayout: QVBoxLayout = None
@@ -18,10 +48,11 @@ class MainWindow(QMainWindow):
     def __init__(self):
         super(MainWindow, self).__init__()
 
+        self.threadPool = QThreadPool()
         self.setWindowTitle("My App")
 
         layoutFirst = QHBoxLayout()
-        configLayout = ConfigLayout()
+        configLayout = ConfigLayout(self.__redeemCode)
         logLayout = LogLayOut()
 
         layoutFirst.addLayout(configLayout)
@@ -38,6 +69,13 @@ class MainWindow(QMainWindow):
     def show_state(self, s):
         print(s == Qt.CheckState.Checked.value)
         print(s)
+    
+    def __redeemCode(self):
+        logging.info("in __redeemCode")
+        import bdoMainWeb
+        worker = Worker(bdoMainWeb.runCodeRedeem) # Any other args, kwargs are passed to the run function
+        self.threadPool.start(worker)
+        pass
 
 
 if __name__ == "__main__":
