@@ -4,7 +4,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.action_chains import ActionChains
 
-import PageTools as PT
+import Tools
 import time
 import logging
 
@@ -24,9 +24,9 @@ class BDOHomePage(Page):
     url = BDO_NAEU_HOME_URL
     title = "Black Desert NA/EU – The Start of Your Adventure | Pearl Abyss"
     
-    def __init__(self, browser, region=PT.Region.NAEU) -> None:
+    def __init__(self, browser, region=Tools.Region.NAEU) -> None:
         super().__init__(browser)
-        if region == PT.Region.ASIA:
+        if region == Tools.Region.ASIA:
             self.url = BDO_ASIA_HOME_URL
 
     def navigateToLogInPage(self):
@@ -40,11 +40,11 @@ class BDOHomePage(Page):
         # hover over profile button to
         profileIcon = self.browser.find_element(By.CSS_SELECTOR, ".js-profileWrap") 
         LogInButton = self.browser.find_element(By.CSS_SELECTOR, "li.profile_remote_item:nth-child(1) > a:nth-child(1)")
-        for i in range(PT.NUM_RETRIES):
+        for i in range(Tools.NUM_RETRIES):
             try:
                 actions = ActionChains(self.browser)
                 actions.move_to_element(profileIcon)
-                actions.pause(PT.WAIT_TIME) # wait for element the drop down box to load onto screen
+                actions.pause(Tools.WAIT_TIME) # wait for element the drop down box to load onto screen
                 actions.move_to_element(LogInButton)
                 actions.click()
                 actions.perform()
@@ -81,7 +81,7 @@ class SteamLogInPage(Page):
         super().__init__(browser)
 
     def logIn(self, userName: str = "", passWord: str = "") -> BDOHomePage:
-        if PT.PageTools.waitUntilTitleIsEqual(self.browser, self.title, timeout=PT.WAIT_TIME) is False:
+        if Tools.PageTools.waitUntilTitleIsEqual(self.browser, self.title, timeout=Tools.WAIT_TIME) is False:
             print("Fail to verify tiltes: ", self.browser.title, " ", self.title)
         # check if steam has remembered this user previously...
         if (True): # TODO::Perform check if the HTML object exists
@@ -94,7 +94,7 @@ class SteamLogInPage(Page):
     
     def __SignInWithCookie(self) -> None:
         # Will have to wait for the cookie stuff to work
-        signInButton = WebDriverWait(self.browser, PT.WAIT_TIME).until(EC.presence_of_element_located((By.CSS_SELECTOR, '#imageLogin')))
+        signInButton = WebDriverWait(self.browser, Tools.WAIT_TIME).until(EC.presence_of_element_located((By.CSS_SELECTOR, '#imageLogin')))
         signInButton.click()
 
 
@@ -106,15 +106,15 @@ class BDOLogInPage(Page):
 
     def navigateToPage(self) -> None:
         self.browser.get(self.url)
-        PT.PageTools.saveScreenShot(self.browser, "bdoLoginPage.png")
+        Tools.PageTools.saveScreenShot(self.browser, "bdoLoginPage.png")
         assert self.browser.title == self.title, "Failed to enter Login Page"
 
     def navigateToSteamLogIn(self) -> SteamLogInPage:
         # confirm we are on the BDOLogInPage
-        if PT.PageTools.waitUntilTitleIsEqual(self.browser, self.title, interval=0.1, timeout=PT.WAIT_TIME) is False:
+        if Tools.PageTools.waitUntilTitleIsEqual(self.browser, self.title, interval=0.1, timeout=Tools.WAIT_TIME) is False:
             logging.error("Failed to load BDOLogInPage...")
             raise ValueError("Failed to load BDOLogInPage...")
-        steamLoginButton = WebDriverWait(self.browser, PT.WAIT_TIME).until(EC.presence_of_element_located((By.CSS_SELECTOR, '#btnSteam')))
+        steamLoginButton = WebDriverWait(self.browser, Tools.WAIT_TIME).until(EC.presence_of_element_located((By.CSS_SELECTOR, '#btnSteam')))
         # Scroll to log in button
         self.browser.execute_script("arguments[0].scrollIntoView();", steamLoginButton)
         time.sleep(2)
@@ -123,9 +123,9 @@ class BDOLogInPage(Page):
 
     def logIn(self, userName: str, password: str):
         # I do not have normal steam account D: Nor am I willing to shill out cash for this
-        userContainer = WebDriverWait(self.browser, PT.WAIT_TIME).until(EC.presence_of_element_located((By.CSS_SELECTOR, '#_email')))
-        passContainer = WebDriverWait(self.browser, PT.WAIT_TIME).until(EC.presence_of_element_located((By.CSS_SELECTOR, '#_password')))
-        logInButton = WebDriverWait(self.browser, PT.WAIT_TIME).until(EC.presence_of_element_located((By.CSS_SELECTOR, '#btnLogin')))
+        userContainer = WebDriverWait(self.browser, Tools.WAIT_TIME).until(EC.presence_of_element_located((By.CSS_SELECTOR, '#_email')))
+        passContainer = WebDriverWait(self.browser, Tools.WAIT_TIME).until(EC.presence_of_element_located((By.CSS_SELECTOR, '#_password')))
+        logInButton = WebDriverWait(self.browser, Tools.WAIT_TIME).until(EC.presence_of_element_located((By.CSS_SELECTOR, '#btnLogin')))
         userContainer.send_keys(userName)
         passContainer.send_keys(password)
         logInButton.click()
@@ -147,7 +147,7 @@ class BDOASIACouponPage(Page):
 
         time.sleep(3) # TODO:: There should a proper way to do this. The wait until visability does not work
         # Asia's codes are seperated into boxes, will have to clear each one by one
-        couponInputGroup = WebDriverWait(self.browser, PT.WAIT_TIME).until(EC.visibility_of_element_located((By.CSS_SELECTOR, '.coupon_input_group')))
+        couponInputGroup = WebDriverWait(self.browser, Tools.WAIT_TIME).until(EC.visibility_of_element_located((By.CSS_SELECTOR, '.coupon_input_group')))
         codeContainers = couponInputGroup.find_elements(By.CSS_SELECTOR, "input[id]")
         button = self.browser.find_element(By.CSS_SELECTOR, "#submitCoupon")
 
@@ -157,7 +157,7 @@ class BDOASIACouponPage(Page):
             codeContainers[0].click() 
             codeContainers[0].send_keys(code)
             button.click()
-            for i in range(PT.NUM_RETRIES):
+            for i in range(Tools.NUM_RETRIES):
                 try:
                     alertText = self.browser.switch_to.alert.text
                     self.browser.switch_to.alert.dismiss()
@@ -178,7 +178,7 @@ class BDOASIACouponPage(Page):
             stayOnWebsiteButton.click()
             # wait for alert to fully disappear
             logging.info("BDO: Now waiting for alert to disappear")
-            WebDriverWait(self.browser, PT.WAIT_TIME).until_not(EC.presence_of_element_located(stayOnWebsiteButton))
+            WebDriverWait(self.browser, Tools.WAIT_TIME).until_not(EC.presence_of_element_located(stayOnWebsiteButton))
             logging.info("BDO: Clear off Region Alert Success")
         except Exception:
             logging.info("BDO: No Region Alert")
@@ -202,7 +202,7 @@ class BDONAEUCouponPage(Page):
             stayOnWebsiteButton.click()
             # wait for alert to fully disappear
             logging.info("BDO: Now waiting for alert to disappear")
-            WebDriverWait(self.browser, PT.WAIT_TIME).until_not(EC.presence_of_element_located(stayOnWebsiteButton))
+            WebDriverWait(self.browser, Tools.WAIT_TIME).until_not(EC.presence_of_element_located(stayOnWebsiteButton))
             logging.info("BDO: Clear off Region Alert Success")
         except Exception:
             logging.info("BDO: No Region Alert")
@@ -212,7 +212,7 @@ class BDONAEUCouponPage(Page):
 
         self.byPassRegionAlert()
 
-        couponContainer = WebDriverWait(self.browser, PT.WAIT_TIME).until(EC.presence_of_element_located((By.CSS_SELECTOR, '#couponCode')))
+        couponContainer = WebDriverWait(self.browser, Tools.WAIT_TIME).until(EC.presence_of_element_located((By.CSS_SELECTOR, '#couponCode')))
         for code in codes:
             couponContainer.click()
             couponContainer.send_keys(code)

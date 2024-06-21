@@ -1,6 +1,6 @@
 
 from PyQt6.QtWidgets import *
-from PyQt6.QtGui import QPalette, QColor
+from PyQt6.QtGui import QMouseEvent, QPalette, QColor, QCursor
 from PyQt6.QtCore import *
 
 
@@ -13,20 +13,6 @@ class Color(QWidget):
         palette = self.palette()
         palette.setColor(QPalette.ColorRole.Window, QColor(color))
         self.setPalette(palette)
-
-
-
-# class Button(QWidget):
-#     def __init__(self, myFunc):
-#         super().__init__()
-#         # layout = QHBoxLayout()
-#         self.buttonWgt = QPushButton("Save")
-#         # layout.addWidget(self.buttonWgt)
-#         print("type if func: ", type(myFunc))
-#         self.buttonWgt.clicked.connect(myFunc)
-#         # layout.setSpacing(0)
-#         # layout.setContentsMargins(0,0,0,0)
-#         # self.setLayout(layout)
 
 
 

@@ -1,7 +1,11 @@
 from PyQt6.QtWidgets import *
 import customWidgets as CW
 from PyQt6.QtCore import *
-from PageTools import *
+from PyQt6.QtGui import QIntValidator
+from bdoMainWeb import runCodeRedeem
+
+import Tools
+import logger
 
 import os
 import yaml
@@ -11,12 +15,12 @@ class ConfigLayout(QVBoxLayout):
 
     def __init__(self, fn):
         super().__init__()
-        self.regionWgt = CW.LabelComboBox(ConfigConstants.region, ["NAEU", "ASIA"])
-        self.loginMethodWgt = CW.LabelComboBox(ConfigConstants.loginMethod, ["Steam", "PearlAbyss"])
-        self.ffprofileWgt = CW.LabelTextBox(ConfigConstants.ffProfilePath)
+        self.regionWgt = CW.LabelComboBox(Tools.ConfigConstants.region, ["NAEU", "ASIA"])
+        self.loginMethodWgt = CW.LabelComboBox(Tools.ConfigConstants.loginMethod, ["Steam", "PearlAbyss"])
+        self.ffprofileWgt = CW.LabelTextBox(Tools.ConfigConstants.ffProfilePath)
         self.ffprofileTipWgt = QLabel("Info: profile path can be found by typing 'about:profiles' into Firefox")
-        self.usernameWgt = CW.LabelTextBox(ConfigConstants.username)
-        self.passwordWgt = CW.LabelTextBox(ConfigConstants.password)
+        self.usernameWgt = CW.LabelTextBox(Tools.ConfigConstants.username)
+        self.passwordWgt = CW.LabelTextBox(Tools.ConfigConstants.password)
 
         # Button layout
         buttonLayOut = QHBoxLayout()
@@ -50,20 +54,20 @@ class ConfigLayout(QVBoxLayout):
 
     def loadData(self):
         config = yaml.safe_load(open(self.configPath))
-        self.regionWgt.setText(config[ConfigConstants.region])
-        self.loginMethodWgt.setText(config[ConfigConstants.loginMethod])
-        self.ffprofileWgt.setText(config[ConfigConstants.ffProfilePath])
-        self.usernameWgt.setText(config[ConfigConstants.username])
-        self.passwordWgt.setText(config[ConfigConstants.password])
+        self.regionWgt.setText(config[Tools.ConfigConstants.region])
+        self.loginMethodWgt.setText(config[Tools.ConfigConstants.loginMethod])
+        self.ffprofileWgt.setText(config[Tools.ConfigConstants.ffProfilePath])
+        self.usernameWgt.setText(config[Tools.ConfigConstants.username])
+        self.passwordWgt.setText(config[Tools.ConfigConstants.password])
         
 
     def saveData(self):
         data = {
-            ConfigConstants.region: self.regionWgt.getText(),
-            ConfigConstants.loginMethod: self.loginMethodWgt.getText(),
-            ConfigConstants.ffProfilePath: self.ffprofileWgt.getText(),
-            ConfigConstants.username: self.usernameWgt.getText(),
-            ConfigConstants.password: self.passwordWgt.getText()
+            Tools.ConfigConstants.region: self.regionWgt.getText(),
+            Tools.ConfigConstants.loginMethod: self.loginMethodWgt.getText(),
+            Tools.ConfigConstants.ffProfilePath: self.ffprofileWgt.getText(),
+            Tools.ConfigConstants.username: self.usernameWgt.getText(),
+            Tools.ConfigConstants.password: self.passwordWgt.getText()
         }  
         with open(self.configPath, 'w') as outfile:
             yaml.dump(data, outfile, default_flow_style=False)
@@ -91,3 +95,64 @@ class LogLayOut (QVBoxLayout):
 
     def getPlainTextWgt(self):
         return self.textBoxWgt
+
+
+from myScheduler import MyScheduler
+class timerLayOut(QVBoxLayout):
+
+    nextDate: QDateTime = QDateTime.currentDateTime()
+    schedule: MyScheduler = None
+
+    def __init__(self):
+        super().__init__()
+        self.schedule = MyScheduler()
+        # starting datatime
+        self.startDateWgt = QDateTimeEdit()
+        self.startDateWgt.setDateTime(QDateTime.currentDateTime())
+
+        self.daysWgt = CW.LabelTextBox("Days")
+        self.daysWgt.lineWgt.setValidator(QIntValidator())
+
+        self.hoursWgt = CW.LabelTextBox("Hour")
+        self.hoursWgt.lineWgt.setValidator(QIntValidator())
+
+        #save time config button
+        self.saveTimeConfigWgt = QPushButton("Save")
+        self.saveTimeConfigWgt.pressed.connect(self.setTimer)
+
+        # Date and time of execution widget
+        self.timeWgt = QLabel("Executing on: Month, Day, time")
+
+        # add widget into layout
+        self.addWidget(QLabel("Start Date"), 0)
+        self.addWidget(self.startDateWgt, 0)
+        self.addWidget(QLabel("Please insert the period of exeuction below"), 0, Qt.AlignmentFlag.AlignCenter)
+        self.addWidget(self.daysWgt, 0, Qt.AlignmentFlag.AlignCenter)
+        self.addWidget(self.hoursWgt, 0, Qt.AlignmentFlag.AlignCenter)
+        self.addWidget(self.saveTimeConfigWgt, 0, Qt.AlignmentFlag.AlignCenter)
+        self.addWidget(self.timeWgt, 0, Qt.AlignmentFlag.AlignCenter)
+
+    def setTimer(self):
+        
+        startDate = self.startDateWgt.dateTime()
+        
+        day = 0
+        hours = 0
+        if self.daysWgt.getText() != "":
+            day = int(self.daysWgt.getText())
+        if self.hoursWgt.getText() != "":
+            hours = int(self.hoursWgt.getText())
+        
+        self.nextDate = startDate
+        self.nextDate = self.nextDate.addDays(day)
+        self.nextDate = self.nextDate.addSecs(60 * 60 * hours)
+        self.timeWgt.setText(f"Date of Next Execution: {self.nextDate.toString()}")
+        
+        # first clear out any upstanding jobs
+        self.schedule.delete_jobs()
+        # schedule the task 
+        logger.logging.info("Creating Job...")
+        self.schedule.cyclicJob(runCodeRedeem, day, hours)
+        logger.logging.info(f"Job created:  {self.schedule}")
+
+    

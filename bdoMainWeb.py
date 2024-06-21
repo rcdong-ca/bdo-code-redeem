@@ -7,7 +7,7 @@ import traceback
 import yaml
 
 import Page as Page
-from PageTools import *
+import Tools
 import GarmothWeb as GM
 
 import logging
@@ -56,9 +56,9 @@ class BdoWeb:
 
 
     def inputCodes(self, codes: list):
-        if (self.region == Region.NAEU):
+        if (self.region == Tools.Region.NAEU):
             bdoCouponPage = Page.BDONAEUCouponPage(self.browser)
-        elif (self.region == Region.ASIA):
+        elif (self.region == Tools.Region.ASIA):
             bdoCouponPage = Page.BDOASIACouponPage(self.browser)
         else:
             logging.error("Incorrect region parameter. Please refor to config again...")
@@ -69,14 +69,14 @@ class BdoWeb:
 
 def runCodeRedeem():
     # logging.getLogger().addHandler(logging.FileHandler(filename=LOGFILE_PATH,mode="a"))
-    configPath = ABS_PATH + "config.yml"
+    configPath = Tools.ABS_PATH + "config.yml"
     config = yaml.safe_load(open(configPath))
     options = Options()
     # options.add_argument('-headless')
-    options.profile =FirefoxProfile(config[ConfigConstants.ffProfilePath])
+    options.profile =FirefoxProfile(config[Tools.ConfigConstants.ffProfilePath])
     browser = Firefox(options=options)
-    region = Region.translateRegion(config[ConfigConstants.region])
-    logging.info("BDO account based in %s region", config[ConfigConstants.region])
+    region = Tools.Region.translateRegion(config[Tools.ConfigConstants.region])
+    logging.info("BDO account based in %s region", config[Tools.ConfigConstants.region])
     try:
         garmothWeb = GM.GarmothWeb(browser)
         garmothWeb.selectRegion("NAEU")
@@ -85,10 +85,11 @@ def runCodeRedeem():
         if len(codes) > 0:
             bdoWeb = BdoWeb(browser, region)
 
-            if (config[ConfigConstants.loginMethod] == "Steam"):
+            if (config[Tools.ConfigConstants.loginMethod] == "Steam"):
                 bdoWeb.steamLogIn()
             else:
-                bdoWeb.logIn(config[ConfigConstants.username], config[ConfigConstants.password])
+                bdoWeb.logIn(config[Tools.ConfigConstants.username], \
+                             config[Tools.ConfigConstants.password])
             
             bdoWeb.inputCodes(codes)
             logging.info("Code has been inputted successfully. Now closing program")
@@ -101,5 +102,5 @@ def runCodeRedeem():
         errorTraceBack = traceback.format_exc()
         logging.error(errorTraceBack)
         print(errorTraceBack)
-        print("Please refer to to log file at for further details: ", LOGFILE_PATH)
+        print("Please refer to to log file at for further details: ", Tools.LOGFILE_PATH)
         

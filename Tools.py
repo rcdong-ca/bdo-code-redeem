@@ -2,7 +2,6 @@ from selenium.webdriver import Firefox
 from selenium.webdriver.common.keys import Keys
 import time
 import os
-import logging
 from enum import Enum
 
 ABS_PATH = os.path.dirname(os.path.realpath(__file__)) + "/"
@@ -19,10 +18,6 @@ class ConfigConstants:
     ffProfilePath = "Firefox Profile Path"
     username = "Username"
     password = "Password"
-
-# general logger
-logger = logging.getLogger(__name__)
-logging.basicConfig(filename=LOGFILE_PATH, encoding='utf-8', level=logging.INFO, filemode='w')
 
 
 class PageTools:
@@ -60,4 +55,5 @@ class Region(Enum):
             return cls.NAEU
         elif regionStr == "ASIA":
             return cls.ASIA
+        
 
