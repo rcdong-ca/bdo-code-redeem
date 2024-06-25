@@ -22,15 +22,17 @@ class LabelTextBox(QWidget):
         super().__init__()
         boxLayout = QHBoxLayout()
         boxLayout.setSpacing(0)
-        boxLayout.setContentsMargins(0,0,0,0)
+        # boxLayout.setContentsMargins(0,0,0,0)
         self.labelWgt = QLabel(label)
         self.lineWgt = QLineEdit()
+        self.labelWgt.setFixedSize(125,25)
+        self.lineWgt.setFixedSize(150,25)
         # position label and widget right next to each other
         # self.lineWgt.setSizePolicy(QSizePolicy.Policy.MinimumExpanding,QSizePolicy.Policy.Minimum)
         # self.lineWgt.resize(self.lineWgt.sizeHint())
 
-        boxLayout.addWidget(self.labelWgt,0, Qt.AlignmentFlag.AlignLeft)
-        boxLayout.addWidget(self.lineWgt,0, Qt.AlignmentFlag.AlignLeft)
+        boxLayout.addWidget(self.labelWgt) #,0, Qt.AlignmentFlag.AlignLeft)
+        boxLayout.addWidget(self.lineWgt) #,0, Qt.AlignmentFlag.AlignLeft)
         self.setLayout(boxLayout)
     
     def getLabel(self):
@@ -46,13 +48,16 @@ class LabelComboBox(QWidget):
     def __init__(self, label: str, options: list) -> None:
         super().__init__()
         boxLayout = QHBoxLayout()
-        self.labelWgt = QLabel(label)
+        self.labelWgt = QLabel(label, self)
+        self.labelWgt.setStyleSheet("background-color:rgb(255,255,150)")
+        self.labelWgt.setFixedSize(125,25)
         self.comboWgt = QComboBox()
+        self.comboWgt.setFixedSize(150,25)
         self.comboWgt.addItems(options)
         # self.comboWgt.setSizePolicy(QSizePolicy.Policy.MinimumExpanding,QSizePolicy.Policy.Minimum)
         # position label and widget right next to each other
-        boxLayout.addWidget(self.labelWgt,0, Qt.AlignmentFlag.AlignLeft)
-        boxLayout.addWidget(self.comboWgt, 0, Qt.AlignmentFlag.AlignLeft)
+        boxLayout.addWidget(self.labelWgt)
+        boxLayout.addWidget(self.comboWgt)
         boxLayout.setSpacing(0)
         boxLayout.setContentsMargins(0,0,0,0)
         self.setLayout(boxLayout)

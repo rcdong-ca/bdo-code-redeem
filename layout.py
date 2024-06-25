@@ -84,6 +84,7 @@ class LogLayOut (QVBoxLayout):
         super().__init__()
         self.textBoxWgt = QPlainTextEdit()
         self.textBoxWgt.setReadOnly(True)
+        self.textBoxWgt.setMinimumSize(400, 600)
         self.buttonWgt = QPushButton("Clear")
         self.buttonWgt.clicked.connect(self.clearText)
 
@@ -152,7 +153,8 @@ class timerLayOut(QVBoxLayout):
         self.schedule.delete_jobs()
         # schedule the task 
         logger.logging.info("Creating Job...")
-        self.schedule.cyclicJob(runCodeRedeem, day, hours)
+        self.schedule.once(self.nextDate.toPyDateTime(), self.schedule.cyclicJob, args=(runCodeRedeem, day, hours))
+        # self.schedule.cyclicJob(runCodeRedeem, day, hours)
         logger.logging.info(f"Job created:  {self.schedule}")
 
     

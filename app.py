@@ -23,13 +23,15 @@ class MainWindow(QMainWindow):
         self.setWindowTitle("My App")
 
         layoutFirst = QHBoxLayout()
+        lhLayout = QVBoxLayout()
         configLayout = ConfigLayout(self.__redeemCode)
         logLayout = LogLayOut()
         timerLayout = timerLayOut()
 
-        layoutFirst.addLayout(configLayout)
+        lhLayout.addLayout(configLayout)
+        lhLayout.addLayout(timerLayout)
+        layoutFirst.addLayout(lhLayout)
         layoutFirst.addLayout(logLayout)
-        layoutFirst.addLayout(timerLayout)
 
 
         widget = QWidget()
