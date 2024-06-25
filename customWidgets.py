@@ -22,7 +22,7 @@ class LabelTextBox(QWidget):
         super().__init__()
         boxLayout = QHBoxLayout()
         boxLayout.setSpacing(0)
-        # boxLayout.setContentsMargins(0,0,0,0)
+        boxLayout.setContentsMargins(0,0,0,0)
         self.labelWgt = QLabel(label)
         self.lineWgt = QLineEdit()
         self.labelWgt.setFixedSize(125,25)
@@ -31,8 +31,8 @@ class LabelTextBox(QWidget):
         # self.lineWgt.setSizePolicy(QSizePolicy.Policy.MinimumExpanding,QSizePolicy.Policy.Minimum)
         # self.lineWgt.resize(self.lineWgt.sizeHint())
 
-        boxLayout.addWidget(self.labelWgt) #,0, Qt.AlignmentFlag.AlignLeft)
-        boxLayout.addWidget(self.lineWgt) #,0, Qt.AlignmentFlag.AlignLeft)
+        boxLayout.addWidget(self.labelWgt,0, Qt.AlignmentFlag.AlignLeft)
+        boxLayout.addWidget(self.lineWgt,0, Qt.AlignmentFlag.AlignLeft)
         self.setLayout(boxLayout)
     
     def getLabel(self):
@@ -49,15 +49,15 @@ class LabelComboBox(QWidget):
         super().__init__()
         boxLayout = QHBoxLayout()
         self.labelWgt = QLabel(label, self)
-        self.labelWgt.setStyleSheet("background-color:rgb(255,255,150)")
+        # self.labelWgt.setStyleSheet("background-color:rgb(255,255,150)")
         self.labelWgt.setFixedSize(125,25)
         self.comboWgt = QComboBox()
         self.comboWgt.setFixedSize(150,25)
         self.comboWgt.addItems(options)
         # self.comboWgt.setSizePolicy(QSizePolicy.Policy.MinimumExpanding,QSizePolicy.Policy.Minimum)
         # position label and widget right next to each other
-        boxLayout.addWidget(self.labelWgt)
-        boxLayout.addWidget(self.comboWgt)
+        boxLayout.addWidget(self.labelWgt, 0, Qt.AlignmentFlag.AlignLeft)
+        boxLayout.addWidget(self.comboWgt, 0, Qt.AlignmentFlag.AlignLeft)
         boxLayout.setSpacing(0)
         boxLayout.setContentsMargins(0,0,0,0)
         self.setLayout(boxLayout)
@@ -66,7 +66,6 @@ class LabelComboBox(QWidget):
         return self.labelWgt.text()
 
     def getText(self):
-        print("combo: currentText ", self.comboWgt.currentText() )
         return self.comboWgt.currentText()
     
     def setText(self, text: str):

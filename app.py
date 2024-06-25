@@ -1,7 +1,7 @@
 import sys
 from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import *
-from PyQt6.QtGui import QPalette, QColor
+from PyQt6.QtGui import QPalette, QColor, QAction, QIcon
 
 import sys
 import logger
@@ -13,14 +13,13 @@ from layout import *
 
 class MainWindow(QMainWindow):
 
-    configLayout: QVBoxLayout = None
     logHandler: logger.logging.Handler = None
 
     def __init__(self):
         super(MainWindow, self).__init__()
 
         self.threadPool = QThreadPool()
-        self.setWindowTitle("My App")
+        self.setWindowTitle("BDO code Redemption")
 
         layoutFirst = QHBoxLayout()
         lhLayout = QVBoxLayout()
@@ -54,7 +53,26 @@ class MainWindow(QMainWindow):
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
+    app.setQuitOnLastWindowClosed(False)
     window = MainWindow()
+
+    # adding item into tray
+    tray =QSystemTrayIcon()
+    icon = QIcon("icon.jpg")
+    tray.setIcon(icon)
+    tray.setVisible(True)
+
+    # add menu
+    menu = QMenu()
+    quit = QAction("Quit") 
+    quit.triggered.connect(app.quit) 
+    menu.addAction(quit)
+
+    openWindow = QAction("Open")
+    openWindow.triggered.connect(window.show)
+    menu.addAction(openWindow)
+    tray.setContextMenu(menu)
+
     window.show()
     logger.logging.getLogger().addHandler(window.logHandler)
     try:

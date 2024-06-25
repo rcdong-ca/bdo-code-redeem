@@ -84,7 +84,8 @@ class LogLayOut (QVBoxLayout):
         super().__init__()
         self.textBoxWgt = QPlainTextEdit()
         self.textBoxWgt.setReadOnly(True)
-        self.textBoxWgt.setMinimumSize(400, 600)
+        self.textBoxWgt.setMinimumSize(200, 400)
+        self.textBoxWgt.setMaximumSize(500,600)
         self.buttonWgt = QPushButton("Clear")
         self.buttonWgt.clicked.connect(self.clearText)
 
@@ -125,9 +126,10 @@ class timerLayOut(QVBoxLayout):
         self.timeWgt = QLabel("Executing on: Month, Day, time")
 
         # add widget into layout
-        self.addWidget(QLabel("Start Date"), 0)
+        self.addWidget(QLabel("Job Scheduler:"), 0)
+        self.addWidget(QLabel("Set Start Date"), 0)
         self.addWidget(self.startDateWgt, 0)
-        self.addWidget(QLabel("Please insert the period of exeuction below"), 0, Qt.AlignmentFlag.AlignCenter)
+        self.addWidget(QLabel("Frequency of job schedule"), 0, Qt.AlignmentFlag.AlignCenter)
         self.addWidget(self.daysWgt, 0, Qt.AlignmentFlag.AlignCenter)
         self.addWidget(self.hoursWgt, 0, Qt.AlignmentFlag.AlignCenter)
         self.addWidget(self.saveTimeConfigWgt, 0, Qt.AlignmentFlag.AlignCenter)
