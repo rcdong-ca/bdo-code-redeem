@@ -1,19 +1,14 @@
 from selenium.webdriver import Firefox
 from selenium.webdriver.firefox.firefox_profile import FirefoxProfile
 from selenium.webdriver.firefox.options import Options
-from selenium.common.exceptions import TimeoutException
-import traceback
 
+import traceback
+import logging
 import yaml
 
-import Page as Page
-import Tools
-import GarmothWeb as GM
-
-import logging
-
-
-DEFAULT_PROFILE = "/Users/richard/Library/Application Support/Firefox/Profiles/zjy78xik.default-release"
+from .Page import *
+from ..Tools.tools import Region, ConfigConstants, LOGFILE_PATH, CONFIG_PATH
+from .garmothWeb import GarmothWeb
 
 class BdoWeb:
     browser: Firefox = None
@@ -27,7 +22,7 @@ class BdoWeb:
         try:
             if (self.getLoginStatus()):
                 return True
-            bdoHomePage = Page.BDOHomePage(self.browser, self.region)
+            bdoHomePage = BDOHomePage(self.browser, self.region)
             bdoLogInPage = bdoHomePage.navigateToLogInPage()
             steamLogInPage = bdoLogInPage.navigateToSteamLogIn()
             steamLogInPage.logIn(username, password)
@@ -42,7 +37,7 @@ class BdoWeb:
                 logging.info("User already loggedin!")
                 return True
         
-            bdoHomePage = Page.BDOHomePage(self.browser, self.region)
+            bdoHomePage = BDOHomePage(self.browser, self.region)
             bdoLogInPage = bdoHomePage.navigateToLogInPage()
             bdoLogInPage.logIn(username, password)
             return True
@@ -51,15 +46,15 @@ class BdoWeb:
             return False
         
     def getLoginStatus(self) -> bool:
-        bdoHomePage = Page.BDOHomePage(self.browser)
+        bdoHomePage = BDOHomePage(self.browser)
         return bdoHomePage.getLogInStatus()
 
 
     def inputCodes(self, codes: list):
-        if (self.region == Tools.Region.NAEU):
-            bdoCouponPage = Page.BDONAEUCouponPage(self.browser)
-        elif (self.region == Tools.Region.ASIA):
-            bdoCouponPage = Page.BDOASIACouponPage(self.browser)
+        if (self.region == Region.NAEU):
+            bdoCouponPage = BDONAEUCouponPage(self.browser)
+        elif (self.region == Region.ASIA):
+            bdoCouponPage = BDOASIACouponPage(self.browser)
         else:
             logging.error("Incorrect region parameter. Please refor to config again...")
         bdoCouponPage.navigateToPage()
@@ -68,28 +63,29 @@ class BdoWeb:
 
 
 def runCodeRedeem():
-    # logging.getLogger().addHandler(logging.FileHandler(filename=LOGFILE_PATH,mode="a"))
-    configPath = Tools.ABS_PATH + "config.yml"
-    config = yaml.safe_load(open(configPath))
+    
+    config = yaml.safe_load(open(CONFIG_PATH))
     options = Options()
-    # options.add_argument('-headless')
-    options.profile =FirefoxProfile(config[Tools.ConfigConstants.ffProfilePath])
+
+    options.add_argument('-headless')
+
+    options.profile =FirefoxProfile(config[ConfigConstants.ffProfilePath])
     browser = Firefox(options=options)
-    region = Tools.Region.translateRegion(config[Tools.ConfigConstants.region])
-    logging.info("BDO account based in %s region", config[Tools.ConfigConstants.region])
+    region = Region.translateRegion(config[ConfigConstants.region])
+    logging.info("BDO account based in %s region", config[ConfigConstants.region])
     try:
-        garmothWeb = GM.GarmothWeb(browser)
+        garmothWeb = GarmothWeb(browser)
         garmothWeb.selectRegion("NAEU")
         codes = garmothWeb.getCouponCodes()
         logging.info("GARMOTH CODES: %s", str(codes))
         if len(codes) > 0:
             bdoWeb = BdoWeb(browser, region)
 
-            if (config[Tools.ConfigConstants.loginMethod] == "Steam"):
+            if (config[ConfigConstants.loginMethod] == "Steam"):
                 bdoWeb.steamLogIn()
             else:
-                bdoWeb.logIn(config[Tools.ConfigConstants.username], \
-                             config[Tools.ConfigConstants.password])
+                bdoWeb.logIn(config[ConfigConstants.username], \
+                             config[ConfigConstants.password])
             
             bdoWeb.inputCodes(codes)
             logging.info("Code has been inputted successfully. Now closing program")
@@ -102,5 +98,5 @@ def runCodeRedeem():
         errorTraceBack = traceback.format_exc()
         logging.error(errorTraceBack)
         print(errorTraceBack)
-        print("Please refer to to log file at for further details: ", Tools.LOGFILE_PATH)
+        print("Please refer to to log file at for further details: ", LOGFILE_PATH)
         

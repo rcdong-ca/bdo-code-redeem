@@ -4,9 +4,11 @@ import time
 import os
 from enum import Enum
 
-ABS_PATH = os.path.dirname(os.path.realpath(__file__)) + "/"
-LOGDIR_PATH = ABS_PATH + "/logs/"
+ROOT_PATH = os.path.abspath(os.curdir)
+LOGDIR_PATH = ROOT_PATH + "/logs/"
 LOGFILE_PATH = LOGDIR_PATH + "/ScriptLogs.log"
+CONFIG_PATH = ROOT_PATH + "/config.yml"
+IMAGEDIR_PATH = ROOT_PATH + "/docs/images/"
 WAIT_TIME = 2
 NUM_RETRIES = 3
 

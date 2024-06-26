@@ -1,3 +1,6 @@
+PyQt6==6.7.0
+PyQt6_sip==13.6.0
 PyYAML==6.0.1
 PyYAML==6.0.1
-selenium==4.20.0
+scheduler==0.8.7
+selenium==4.22.0

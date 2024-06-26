@@ -3,7 +3,7 @@ from selenium.webdriver import Firefox
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-import Tools
+from ..Tools.tools import WAIT_TIME
 
 
 class GarmothWeb():
@@ -15,11 +15,11 @@ class GarmothWeb():
 
     def selectRegion(self, region: str):
         # click region button
-        WebDriverWait(self.browser, Tools.WAIT_TIME).until(EC.presence_of_element_located((By.CSS_SELECTOR, \
+        WebDriverWait(self.browser, WAIT_TIME).until(EC.presence_of_element_located((By.CSS_SELECTOR, \
             ".mr-4 > div:nth-child(1) > div:nth-child(1) > div:nth-child(1) > p:nth-child(1)"))).click()
 
         # wait for drop down selections to load
-        regionDropBox = WebDriverWait(self.browser, Tools.WAIT_TIME).until(EC.presence_of_element_located((By.CSS_SELECTOR, \
+        regionDropBox = WebDriverWait(self.browser, WAIT_TIME).until(EC.presence_of_element_located((By.CSS_SELECTOR, \
             ".z-\[9999\]")))
         
         if (region == "NAEU"):
@@ -40,12 +40,12 @@ class GarmothWeb():
         
         # locate the coupon see more button. This will navigate one to another page
 
-        seeMoreButton = WebDriverWait(self.browser, Tools.WAIT_TIME).until(EC.presence_of_element_located((By.XPATH, \
+        seeMoreButton = WebDriverWait(self.browser, WAIT_TIME).until(EC.presence_of_element_located((By.XPATH, \
              "/html/body/div[1]/div/main/div[2]/div[1]/div[1]/section[2]/div[1]/div/a")))
         seeMoreButton.click()
 
         # locate the container and obtain all copons
-        availableCouponsContainer = WebDriverWait(self.browser, Tools.WAIT_TIME ).until(EC.presence_of_element_located((By.XPATH, \
+        availableCouponsContainer = WebDriverWait(self.browser, WAIT_TIME ).until(EC.presence_of_element_located((By.XPATH, \
              "/html/body/div[1]/div/main/div[2]/div[2]/section[1]/div")))
         couponContainers = availableCouponsContainer.find_elements(By.CSS_SELECTOR, "input[id]")
         for coupon in couponContainers:

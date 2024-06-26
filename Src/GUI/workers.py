@@ -1,4 +1,3 @@
-import sys
 from PyQt6.QtCore import QRunnable, pyqtSlot, QThreadPool
 from PyQt6.QtWidgets import *
 

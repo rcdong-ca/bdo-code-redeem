@@ -1,18 +1,40 @@
 # bdo-code-redeem
-(In progress) 
-Automatically redeems the gift codes for the game Black Desert Online NA (Asia in progress)
+
+Automatically redeems the gift codes for the game Black Desert Online NAEU and ASIA
 
 
 ### Required
+    PyQt6==6.7.0
     PyYAML==6.0.1
-    selenium==4.20.0
+    scheduler==0.8.7
+    selenium==4.22.0
     Firefox Browser
 
-Unix Cron Job document only for now, haven't tried on Windows yet:
+
+### Running the GUI
+
+![screenshot](/docs/images/gui.png)
+This GUI is split into 3 sections:
+1. Configuration Section:
+Here the user should put their user information. This allows the application to log in to the account to redeem any codes obtained from [Garmoth.com](https://Garmoth.com). The user can save the configurations so they do not have to re-type it all again. The Run button will execute the script once.
+
+2. The Job Scheduler section:
+The user can set how often they want the code redeem script to run. The user should set a start date. The days and hours will tell when the next job from the start date should run
+ex. Days = 3, hours = 0. The script will run every 3 days from the start date user has set.
+
+3. The log section:
+While running the script, any logs and errors output will be directed to the large text box on the right side. This will tell the user if jobs has been scheduled correctly, if the script was able to execute successfuly, as well as the codes redeemed.
+
+Note: This app can be minimized into system tray so it can run in the background without too much visual interferance. This app can only be closed by clicking on the tray icon and clicking the quit option
+
+
+
+### Utilzing Cron job
+
 To utilize this script, please configure the config.yml file accordingly. There will be two log in options suported, Steam login and Pearl Abyss Login. Please follow the tips in the config.yml file to selection your options correctly.
 
-### Pearl Abyss Loging
-Follow the config.yml file. 
+Follow the config.yml file.
+
 Please look at CronJob section next
 
 #### Steam Logins
@@ -46,10 +68,3 @@ Output of file will be in stdout.log (generally not too useflu)
 Error of script will be in stderr.log (Needed for debugging)
 Feel free to change the log file location
 
-
-
-
-
-### In progress:
-    1. Add Asia Support: Completed May 23
-    2. Add a GUI

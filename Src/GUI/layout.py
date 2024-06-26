@@ -1,26 +1,27 @@
 from PyQt6.QtWidgets import *
-import customWidgets as CW
+from .customWidgets import *
 from PyQt6.QtCore import *
 from PyQt6.QtGui import QIntValidator
-from bdoMainWeb import runCodeRedeem
 
-import Tools
-import logger
+from ..Page.bdoMainWeb import runCodeRedeem
+from ..Tools.tools import ConfigConstants, CONFIG_PATH
+from .myScheduler import MyScheduler
+
+import logging
 
 import os
 import yaml
 
 class ConfigLayout(QVBoxLayout):
-    configPath = os.path.dirname(os.path.abspath(__file__)) + "/config.yml"
 
     def __init__(self, fn):
         super().__init__()
-        self.regionWgt = CW.LabelComboBox(Tools.ConfigConstants.region, ["NAEU", "ASIA"])
-        self.loginMethodWgt = CW.LabelComboBox(Tools.ConfigConstants.loginMethod, ["Steam", "PearlAbyss"])
-        self.ffprofileWgt = CW.LabelTextBox(Tools.ConfigConstants.ffProfilePath)
+        self.regionWgt = LabelComboBox(ConfigConstants.region, ["NAEU", "ASIA"])
+        self.loginMethodWgt = LabelComboBox(ConfigConstants.loginMethod, ["Steam", "PearlAbyss"])
+        self.ffprofileWgt = LabelTextBox(ConfigConstants.ffProfilePath)
         self.ffprofileTipWgt = QLabel("Info: profile path can be found by typing 'about:profiles' into Firefox")
-        self.usernameWgt = CW.LabelTextBox(Tools.ConfigConstants.username)
-        self.passwordWgt = CW.LabelTextBox(Tools.ConfigConstants.password)
+        self.usernameWgt = LabelTextBox(ConfigConstants.username)
+        self.passwordWgt = LabelTextBox(ConfigConstants.password)
 
         # Button layout
         buttonLayOut = QHBoxLayout()
@@ -53,30 +54,25 @@ class ConfigLayout(QVBoxLayout):
         return data
 
     def loadData(self):
-        config = yaml.safe_load(open(self.configPath))
-        self.regionWgt.setText(config[Tools.ConfigConstants.region])
-        self.loginMethodWgt.setText(config[Tools.ConfigConstants.loginMethod])
-        self.ffprofileWgt.setText(config[Tools.ConfigConstants.ffProfilePath])
-        self.usernameWgt.setText(config[Tools.ConfigConstants.username])
-        self.passwordWgt.setText(config[Tools.ConfigConstants.password])
+        config = yaml.safe_load(open(CONFIG_PATH))
+        self.regionWgt.setText(config[ConfigConstants.region])
+        self.loginMethodWgt.setText(config[ConfigConstants.loginMethod])
+        self.ffprofileWgt.setText(config[ConfigConstants.ffProfilePath])
+        self.usernameWgt.setText(config[ConfigConstants.username])
+        self.passwordWgt.setText(config[ConfigConstants.password])
         
 
     def saveData(self):
         data = {
-            Tools.ConfigConstants.region: self.regionWgt.getText(),
-            Tools.ConfigConstants.loginMethod: self.loginMethodWgt.getText(),
-            Tools.ConfigConstants.ffProfilePath: self.ffprofileWgt.getText(),
-            Tools.ConfigConstants.username: self.usernameWgt.getText(),
-            Tools.ConfigConstants.password: self.passwordWgt.getText()
+            ConfigConstants.region: self.regionWgt.getText(),
+            ConfigConstants.loginMethod: self.loginMethodWgt.getText(),
+            ConfigConstants.ffProfilePath: self.ffprofileWgt.getText(),
+            ConfigConstants.username: self.usernameWgt.getText(),
+            ConfigConstants.password: self.passwordWgt.getText()
         }  
-        with open(self.configPath, 'w') as outfile:
+        with open(CONFIG_PATH, 'w') as outfile:
             yaml.dump(data, outfile, default_flow_style=False)
             # logger.info(f"Saving config information:\n {data}")
-
-    def runCodeRedeem(self):
-        import bdoMainWeb
-        print("Run code redeem")
-        bdoMainWeb.runCodeRedeem()
 
 
 class LogLayOut (QVBoxLayout):
@@ -98,9 +94,7 @@ class LogLayOut (QVBoxLayout):
     def getPlainTextWgt(self):
         return self.textBoxWgt
 
-
-from myScheduler import MyScheduler
-class timerLayOut(QVBoxLayout):
+class TimerLayOut(QVBoxLayout):
 
     nextDate: QDateTime = QDateTime.currentDateTime()
     schedule: MyScheduler = None
@@ -112,10 +106,10 @@ class timerLayOut(QVBoxLayout):
         self.startDateWgt = QDateTimeEdit()
         self.startDateWgt.setDateTime(QDateTime.currentDateTime())
 
-        self.daysWgt = CW.LabelTextBox("Days")
+        self.daysWgt = LabelTextBox("Days")
         self.daysWgt.lineWgt.setValidator(QIntValidator())
 
-        self.hoursWgt = CW.LabelTextBox("Hour")
+        self.hoursWgt = LabelTextBox("Hour")
         self.hoursWgt.lineWgt.setValidator(QIntValidator())
 
         #save time config button
@@ -154,9 +148,8 @@ class timerLayOut(QVBoxLayout):
         # first clear out any upstanding jobs
         self.schedule.delete_jobs()
         # schedule the task 
-        logger.logging.info("Creating Job...")
+        logging.info("Creating Job...")
         self.schedule.once(self.nextDate.toPyDateTime(), self.schedule.cyclicJob, args=(runCodeRedeem, day, hours))
-        # self.schedule.cyclicJob(runCodeRedeem, day, hours)
-        logger.logging.info(f"Job created:  {self.schedule}")
+        logging.info(f"Job created:  {self.schedule}")
 
     
